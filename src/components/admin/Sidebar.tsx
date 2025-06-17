@@ -15,22 +15,24 @@ import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   isOpen: boolean;
+  activeSection: string;
+  onSectionChange: (section: string) => void;
 }
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: Car, label: "Drivers", count: 12 },
-  { icon: Users, label: "Riders", count: 245 },
-  { icon: MapPin, label: "Rides", count: 89 },
-  { icon: Wallet, label: "Payments" },
-  { icon: BarChart3, label: "Analytics" },
-  { icon: HeadphonesIcon, label: "Support", count: 7 },
-  { icon: Bell, label: "Notifications" },
-  { icon: Shield, label: "Safety" },
-  { icon: Settings, label: "Settings" },
+  { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
+  { icon: Car, label: "Drivers", key: "drivers", count: 12 },
+  { icon: Users, label: "Riders", key: "riders", count: 245 },
+  { icon: MapPin, label: "Rides", key: "rides", count: 89 },
+  { icon: Wallet, label: "Payments", key: "payments" },
+  { icon: BarChart3, label: "Analytics", key: "analytics" },
+  { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },
+  { icon: Bell, label: "Notifications", key: "notifications" },
+  { icon: Shield, label: "Safety", key: "safety" },
+  { icon: Settings, label: "Settings", key: "settings" },
 ];
 
-export const Sidebar = ({ isOpen }: SidebarProps) => {
+export const Sidebar = ({ isOpen, activeSection, onSectionChange }: SidebarProps) => {
   return (
     <div className={cn(
       "fixed left-0 top-0 h-full bg-gray-800 border-r border-gray-700 transition-all duration-300 z-40",
@@ -56,9 +58,10 @@ export const Sidebar = ({ isOpen }: SidebarProps) => {
         {menuItems.map((item, index) => (
           <button
             key={index}
+            onClick={() => onSectionChange(item.key)}
             className={cn(
-              "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors",
-              item.active 
+              "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer",
+              activeSection === item.key
                 ? "bg-blue-600 text-white" 
                 : "text-gray-300 hover:bg-gray-700 hover:text-white"
             )}

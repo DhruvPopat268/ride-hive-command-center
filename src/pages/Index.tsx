@@ -62,12 +62,12 @@ const Index = () => {
       case "settings":
         return <SettingsPage />;
       default:
-        return <div className="text-white">Page not found</div>;
+        return <div className="text-white dark:text-white text-gray-900">Page not found</div>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
+    <div className="min-h-screen bg-gray-900 dark:bg-gray-900 bg-gray-50 text-white dark:text-white text-gray-900 flex">
       <Sidebar 
         isOpen={sidebarOpen} 
         activeSection={activeSection}

@@ -9,7 +9,8 @@ import {
   HeadphonesIcon,
   Wallet,
   Bell,
-  Shield
+  Shield,
+  Tags
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ const menuItems = [
   { icon: Car, label: "Drivers", key: "drivers", count: 12 },
   { icon: Users, label: "Riders", key: "riders", count: 245 },
   { icon: MapPin, label: "Rides", key: "rides", count: 89 },
+  { icon: Tags, label: "Categories", key: "categories" },
   { icon: Wallet, label: "Payments", key: "payments" },
   { icon: BarChart3, label: "Analytics", key: "analytics" },
   { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },

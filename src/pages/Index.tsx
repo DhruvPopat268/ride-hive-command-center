@@ -62,11 +62,7 @@ const Index = () => {
         return <VehicleCategoryPage />;
       case "pricecategory":
         return <PriceCategoryPage />;
-<<<<<<< HEAD
-         case "ridecost":
-=======
       case "ridecost":
->>>>>>> 2cd073e5230611e198656e4b863a10edb8bf5793
         return <RideCostPage />;
       case "payments":
         return <PaymentsPage />;
@@ -87,8 +83,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 dark:bg-gray-900 bg-gray-50 text-white dark:text-white text-gray-900 flex">
-      <Sidebar 
-        isOpen={sidebarOpen} 
+      <Sidebar
+        isOpen={sidebarOpen}
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />

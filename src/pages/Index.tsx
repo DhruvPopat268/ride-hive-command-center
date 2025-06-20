@@ -62,7 +62,11 @@ const Index = () => {
         return <VehicleCategoryPage />;
       case "pricecategory":
         return <PriceCategoryPage />;
+<<<<<<< HEAD
          case "ridecost":
+=======
+      case "ridecost":
+>>>>>>> 2cd073e5230611e198656e4b863a10edb8bf5793
         return <RideCostPage />;
       case "payments":
         return <PaymentsPage />;

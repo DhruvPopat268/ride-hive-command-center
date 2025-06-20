@@ -13,7 +13,8 @@ import {
   Tags,
   FolderTree,
   Truck,
-  DollarSign
+  DollarSign,
+  Calculator
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ const menuItems = [
   { icon: FolderTree, label: "Sub Category", key: "subcategory" },
   { icon: Truck, label: "Vehicle Category", key: "vehiclecategory" },
   { icon: DollarSign, label: "Price Category", key: "pricecategory" },
+  { icon: Calculator, label: "Ride Cost", key: "ridecost" },
   { icon: Wallet, label: "Payments", key: "payments" },
   { icon: BarChart3, label: "Analytics", key: "analytics" },
   { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },

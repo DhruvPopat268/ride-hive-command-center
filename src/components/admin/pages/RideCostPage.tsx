@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -54,6 +53,8 @@ export const RideCostPage = () => {
   const [rideCostDialogOpen, setRideCostDialogOpen] = useState(false);
   const [editingRideCost, setEditingRideCost] = useState<RideCost | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewingRideCost, setViewingRideCost] = useState<RideCost | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
   const handleRideCostSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,6 +173,11 @@ export const RideCostPage = () => {
     setEditDialogOpen(true);
   };
 
+  const handleView = (rideCost: RideCost) => {
+    setViewingRideCost(rideCost);
+    setViewDialogOpen(true);
+  };
+
   const handleDelete = (id: number) => {
     setRideCosts(rideCosts.filter(cost => cost.id !== id));
   };
@@ -268,6 +274,32 @@ export const RideCostPage = () => {
           </DialogContent>
         </Dialog>
 
+        {/* View Dialog */}
+        <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>View Ride Cost Model Details</DialogTitle>
+            </DialogHeader>
+            {viewingRideCost && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {formFields.map((field) => (
+                    <div key={field.key}>
+                      <label className="block text-sm font-medium mb-1">{field.label}</label>
+                      <Input
+                        type={field.type}
+                        value={viewingRideCost[field.key as keyof RideCost]}
+                        readOnly
+                        className="bg-gray-50 cursor-not-allowed"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         <ScrollArea className="w-full">
           <div className="min-w-[400px]">
             <Table>
@@ -285,6 +317,9 @@ export const RideCostPage = () => {
                     <TableCell>{rideCost.modelName}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleView(rideCost)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => handleEdit(rideCost)}>
                           <Edit className="w-4 h-4" />
                         </Button>

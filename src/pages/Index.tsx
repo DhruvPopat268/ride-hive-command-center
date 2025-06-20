@@ -14,6 +14,7 @@ import { CategoryPage } from "@/components/admin/pages/CategoryPage";
 import { SubCategoryPage } from "@/components/admin/pages/SubCategoryPage";
 import { VehicleCategoryPage } from "@/components/admin/pages/VehicleCategoryPage";
 import { PriceCategoryPage } from "@/components/admin/pages/PriceCategoryPage";
+import { RideCostPage } from "@/components/admin/pages/RideCostPage";
 import { PaymentsPage } from "@/components/admin/pages/PaymentsPage";
 import { AnalyticsPage } from "@/components/admin/pages/AnalyticsPage";
 import { SupportPage } from "@/components/admin/pages/SupportPage";
@@ -61,6 +62,8 @@ const Index = () => {
         return <VehicleCategoryPage />;
       case "pricecategory":
         return <PriceCategoryPage />;
+         case "ridecost":
+        return <RideCostPage />;
       case "payments":
         return <PaymentsPage />;
       case "analytics":

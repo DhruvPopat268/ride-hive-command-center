@@ -1,42 +1,90 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
+} from '@/components/ui/dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import axios from 'axios';
 
 interface PriceCategory {
-  id: number;
+  _id: string;
   priceCategoryName: string;
   chargePerKm: number;
   chargePerMinute: number;
 }
 
 export const PriceCategoryPage = () => {
-  const [priceCategories, setPriceCategories] = useState<PriceCategory[]>([
-    { id: 1, priceCategoryName: 'Regular', chargePerKm: 10, chargePerMinute: 1.5 },
-    { id: 2, priceCategoryName: 'Peak Hours', chargePerKm: 15, chargePerMinute: 2.5 },
-  ]);
-  
-  const [priceCategoryForm, setPriceCategoryForm] = useState({ 
-    priceCategoryName: '', chargePerKm: '', chargePerMinute: '' 
+  const [priceCategories, setPriceCategories] = useState<PriceCategory[]>([]);
+  const [priceCategoryForm, setPriceCategoryForm] = useState({
+    priceCategoryName: '',
+    chargePerKm: '',
+    chargePerMinute: ''
   });
-  const [priceCategoryDialogOpen, setPriceCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<PriceCategory | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handlePriceCategorySubmit = (e: React.FormEvent) => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/price-categories`);
+      setPriceCategories(res.data);
+    } catch (err) {
+      console.error('Failed to fetch price categories', err);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (priceCategoryForm.priceCategoryName.trim() && priceCategoryForm.chargePerKm && priceCategoryForm.chargePerMinute) {
-      const newPriceCategory = {
-        id: Date.now(),
-        priceCategoryName: priceCategoryForm.priceCategoryName.trim(),
-        chargePerKm: parseFloat(priceCategoryForm.chargePerKm),
-        chargePerMinute: parseFloat(priceCategoryForm.chargePerMinute)
-      };
-      setPriceCategories([...priceCategories, newPriceCategory]);
+    const payload = {
+      priceCategoryName: priceCategoryForm.priceCategoryName.trim(),
+      chargePerKm: parseFloat(priceCategoryForm.chargePerKm),
+      chargePerMinute: parseFloat(priceCategoryForm.chargePerMinute)
+    };
+
+    try {
+      if (editingCategory) {
+        await axios.put(`${API_BASE_URL}/api/price-categories/${editingCategory._id}`, payload);
+      } else {
+        await axios.post(`${API_BASE_URL}/api/price-categories`, payload);
+      }
+      await fetchCategories();
+      setDialogOpen(false);
+      setEditingCategory(null);
       setPriceCategoryForm({ priceCategoryName: '', chargePerKm: '', chargePerMinute: '' });
-      setPriceCategoryDialogOpen(false);
+    } catch (err) {
+      console.error('Failed to save price category', err);
+    }
+  };
+
+  const handleEdit = (category: PriceCategory) => {
+    setEditingCategory(category);
+    setPriceCategoryForm({
+      priceCategoryName: category.priceCategoryName,
+      chargePerKm: category.chargePerKm.toString(),
+      chargePerMinute: category.chargePerMinute.toString()
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/api/price-categories/${id}`);
+      fetchCategories();
+    } catch (err) {
+      console.error('Failed to delete category', err);
     }
   };
 
@@ -49,22 +97,28 @@ export const PriceCategoryPage = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Price Categories</h2>
-          <Dialog open={priceCategoryDialogOpen} onOpenChange={setPriceCategoryDialogOpen}>
+
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button
+                onClick={() => {
+                  setEditingCategory(null);
+                  setPriceCategoryForm({ priceCategoryName: '', chargePerKm: '', chargePerMinute: '' });
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" />
-                Create Price Category
+                Add New
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create New Price Category</DialogTitle>
+                <DialogTitle>{editingCategory ? 'Edit Price Category' : 'Create Price Category'}</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handlePriceCategorySubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
-                  placeholder="Price category"
+                  placeholder="Category Name"
                   value={priceCategoryForm.priceCategoryName}
-                  onChange={(e) => setPriceCategoryForm({...priceCategoryForm, priceCategoryName: e.target.value})}
+                  onChange={(e) => setPriceCategoryForm({ ...priceCategoryForm, priceCategoryName: e.target.value })}
                   required
                 />
                 <Input
@@ -72,7 +126,7 @@ export const PriceCategoryPage = () => {
                   step="0.01"
                   placeholder="Charge per km"
                   value={priceCategoryForm.chargePerKm}
-                  onChange={(e) => setPriceCategoryForm({...priceCategoryForm, chargePerKm: e.target.value})}
+                  onChange={(e) => setPriceCategoryForm({ ...priceCategoryForm, chargePerKm: e.target.value })}
                   required
                 />
                 <Input
@@ -80,43 +134,70 @@ export const PriceCategoryPage = () => {
                   step="0.01"
                   placeholder="Charge per minute"
                   value={priceCategoryForm.chargePerMinute}
-                  onChange={(e) => setPriceCategoryForm({...priceCategoryForm, chargePerMinute: e.target.value})}
+                  onChange={(e) => setPriceCategoryForm({ ...priceCategoryForm, chargePerMinute: e.target.value })}
                   required
                 />
-                <Button type="submit" className="w-full">Submit</Button>
+                <Button type="submit" className="w-full">
+                  {editingCategory ? 'Update' : 'Create'}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
         </div>
+
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Price Category Name</TableHead>
+              <TableHead>Name</TableHead>
               <TableHead>Charge Per Km</TableHead>
               <TableHead>Charge Per Minute</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {priceCategories.map((priceCategory) => (
-              <TableRow key={priceCategory.id}>
-                <TableCell>{priceCategory.id}</TableCell>
-                <TableCell>{priceCategory.priceCategoryName}</TableCell>
-                <TableCell>${priceCategory.chargePerKm}</TableCell>
-                <TableCell>${priceCategory.chargePerMinute}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+            {priceCategories.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center">
+                  No price category found. Create your first one!
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              priceCategories.map((category) => (
+                <TableRow key={category._id}>
+                  <TableCell>{category.priceCategoryName}</TableCell>
+                  <TableCell>{category.chargePerKm.toFixed(2)}</TableCell>
+                  <TableCell>{category.chargePerMinute.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(category)}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the price category.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(category._id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Card>

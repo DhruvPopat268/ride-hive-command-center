@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Plus, Edit, Trash2, Axis3DIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import axios from 'axios'
 
 interface Category {
   id: number;
@@ -22,49 +23,99 @@ interface SubCategory {
 }
 
 export const SubCategoryPage = () => {
-  const [categories] = useState<Category[]>([
-    { id: 1, name: 'Standard Rides' },
-    { id: 2, name: 'Premium Rides' },
-  ]);
-  
+  const [categories, setCategories] = useState([])
+
   const [subCategories, setSubCategories] = useState<SubCategory[]>([
-    { id: 1, categoryId: 1, categoryName: 'Standard Rides', name: 'Economy' },
-    { id: 2, categoryId: 1, categoryName: 'Standard Rides', name: 'Comfort' },
+    
   ]);
-  
+
   const [subCategoryForm, setSubCategoryForm] = useState({ categoryId: '', name: '' });
   const [subCategoryDialogOpen, setSubCategoryDialogOpen] = useState(false);
   const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleSubCategorySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (subCategoryForm.categoryId && subCategoryForm.name.trim()) {
-      const selectedCategory = categories.find(cat => cat.id.toString() === subCategoryForm.categoryId);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  useEffect(() => {
+const fetchCategories = async () => {
+  try {
+    const cateData = await axios.get(`${API_BASE_URL}/api/categories`);
+
+    console.log(cateData.data?.data)
+    
+    const categoryList = cateData.data?.data;
+
+    if (Array.isArray(categoryList)) {
+      setCategories(categoryList);
+    } else {
+      console.error("Category data is not an array:", cateData.data);
+    }
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
+  }
+};
+
+  const fetchSubCategories = async () => {
+    const subcateData = await axios.get(`${API_BASE_URL}/api/subcategories`);
+
+    if (Array.isArray(subcateData.data)) {
+      setSubCategories(subcateData.data);
+    } else if (Array.isArray(subcateData.data.data)) {
+      setSubCategories(subcateData.data.data); // ✅ Handle response with { data: [...] }
+    } else {
+      console.error("Invalid category response format", subcateData.data);
+      setSubCategories([]);
+    }
+  };
+
+  fetchCategories();
+  fetchSubCategories()
+}, []);
+
+  const handleSubCategorySubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (subCategoryForm.categoryId && subCategoryForm.name.trim()) {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/subcategories`, {
+        categoryId: subCategoryForm.categoryId,
+        name: subCategoryForm.name.trim(),
+      });
+
+      // Optionally update local state if needed
+      const selectedCategory = categories.find(
+        (cat) => cat.id.toString() === subCategoryForm.categoryId
+      );
+
       const newSubCategory = {
-        id: Date.now(),
+        id: response.data.id || Date.now(), // Prefer server ID if available
         categoryId: parseInt(subCategoryForm.categoryId),
         categoryName: selectedCategory?.name || '',
-        name: subCategoryForm.name.trim()
+        name: subCategoryForm.name.trim(),
       };
+
       setSubCategories([...subCategories, newSubCategory]);
       setSubCategoryForm({ categoryId: '', name: '' });
       setSubCategoryDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to add subcategory:', error);
+      alert('Error adding subcategory. Please try again.');
     }
-  };
+  }
+};
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingSubCategory && subCategoryForm.categoryId && subCategoryForm.name.trim()) {
       const selectedCategory = categories.find(cat => cat.id.toString() === subCategoryForm.categoryId);
-      setSubCategories(subCategories.map(subCat => 
-        subCat.id === editingSubCategory.id 
-          ? { 
-              ...subCat, 
-              categoryId: parseInt(subCategoryForm.categoryId),
-              categoryName: selectedCategory?.name || '',
-              name: subCategoryForm.name.trim() 
-            }
+      setSubCategories(subCategories.map(subCat =>
+        subCat.id === editingSubCategory.id
+          ? {
+            ...subCat,
+            categoryId: parseInt(subCategoryForm.categoryId),
+            categoryName: selectedCategory?.name || '',
+            name: subCategoryForm.name.trim()
+          }
           : subCat
       ));
       setSubCategoryForm({ categoryId: '', name: '' });
@@ -75,16 +126,27 @@ export const SubCategoryPage = () => {
 
   const handleEdit = (subCategory: SubCategory) => {
     setEditingSubCategory(subCategory);
-    setSubCategoryForm({ 
-      categoryId: subCategory.categoryId.toString(), 
-      name: subCategory.name 
+    setSubCategoryForm({
+      categoryId: subCategory.categoryId.toString(),
+      name: subCategory.name
     });
     setEditDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setSubCategories(subCategories.filter(subCat => subCat.id !== id));
-  };
+ const handleDelete = async (id: number | string) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/api/subcategories/${id}`);
+    
+    if (response.status === 200) {
+      // Remove from UI
+      setSubCategories(prev => prev.filter(subCat => subCat.id !== id));
+    } else {
+      console.error('Delete failed:', response.data);
+    }
+  } catch (err: any) {
+    console.error('Error deleting subcategory:', err.response?.data || err.message);
+  }
+};
 
   return (
     <div className="space-y-8">
@@ -107,7 +169,7 @@ export const SubCategoryPage = () => {
                 <DialogTitle>Create New Subcategory</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubCategorySubmit} className="space-y-4">
-                <Select value={subCategoryForm.categoryId} onValueChange={(value) => setSubCategoryForm({...subCategoryForm, categoryId: value})}>
+                <Select value={subCategoryForm.categoryId} onValueChange={(value) => setSubCategoryForm({ ...subCategoryForm, categoryId: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -122,7 +184,7 @@ export const SubCategoryPage = () => {
                 <Input
                   placeholder="Sub Category"
                   value={subCategoryForm.name}
-                  onChange={(e) => setSubCategoryForm({...subCategoryForm, name: e.target.value})}
+                  onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
                   required
                 />
                 <Button type="submit" className="w-full">Submit</Button>
@@ -138,7 +200,7 @@ export const SubCategoryPage = () => {
               <DialogTitle>Edit Subcategory</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <Select value={subCategoryForm.categoryId} onValueChange={(value) => setSubCategoryForm({...subCategoryForm, categoryId: value})}>
+              <Select value={subCategoryForm.categoryId} onValueChange={(value) => setSubCategoryForm({ ...subCategoryForm, categoryId: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -153,7 +215,7 @@ export const SubCategoryPage = () => {
               <Input
                 placeholder="Sub Category"
                 value={subCategoryForm.name}
-                onChange={(e) => setSubCategoryForm({...subCategoryForm, name: e.target.value})}
+                onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
                 required
               />
               <Button type="submit" className="w-full">Update</Button>
@@ -170,43 +232,52 @@ export const SubCategoryPage = () => {
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {subCategories.map((subCategory) => (
-              <TableRow key={subCategory.id}>
-                <TableCell>{subCategory.id}</TableCell>
-                <TableCell>{subCategory.categoryName}</TableCell>
-                <TableCell>{subCategory.name}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(subCategory)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the subcategory.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(subCategory.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+         <TableBody>
+  {subCategories.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={4} className="text-center text-muted-foreground">
+        No subcategory found. Create your first subcategory!
+      </TableCell>
+    </TableRow>
+  ) : (
+    subCategories.map((subCategory) => (
+      <TableRow key={subCategory.id}>
+        <TableCell>{subCategory.id}</TableCell>
+        <TableCell>{subCategory.categoryName}</TableCell>
+        <TableCell>{subCategory.name}</TableCell>
+        <TableCell>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" onClick={() => handleEdit(subCategory)}>
+              <Edit className="w-4 h-4" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the subcategory.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDelete(subCategory.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+
         </Table>
       </Card>
     </div>

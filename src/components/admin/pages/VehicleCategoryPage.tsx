@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import axios from 'axios'
 
 interface VehicleCategory {
   id: number;
@@ -18,18 +19,20 @@ interface VehicleCategory {
 
 export const VehicleCategoryPage = () => {
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([
-    { id: 1, image: '/placeholder.svg', vehicleName: 'Sedan', perKmCharge: 12, perMinuteCharge: 2 },
-    { id: 2, image: '/placeholder.svg', vehicleName: 'SUV', perKmCharge: 18, perMinuteCharge: 3 },
+   
   ]);
-  
-  const [vehicleCategoryForm, setVehicleCategoryForm] = useState({ 
-    image: '', vehicleName: '', perKmCharge: '', perMinuteCharge: '' 
+
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+
+  const [vehicleCategoryForm, setVehicleCategoryForm] = useState({
+    image: '', vehicleName: '', perKmCharge: '', perMinuteCharge: ''
   });
   const [vehicleCategoryDialogOpen, setVehicleCategoryDialogOpen] = useState(false);
   const [editingVehicleCategory, setEditingVehicleCategory] = useState<VehicleCategory | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleVehicleCategorySubmit = (e: React.FormEvent) => {
+  const handleVehicleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (vehicleCategoryForm.vehicleName.trim() && vehicleCategoryForm.perKmCharge && vehicleCategoryForm.perMinuteCharge) {
       const newVehicleCategory = {
@@ -39,26 +42,27 @@ export const VehicleCategoryPage = () => {
         perKmCharge: parseFloat(vehicleCategoryForm.perKmCharge),
         perMinuteCharge: parseFloat(vehicleCategoryForm.perMinuteCharge)
       };
-      setVehicleCategories([...vehicleCategories, newVehicleCategory]);
+      const res = await axios.post(`${API_BASE_URL}/api/vehiclecategories`, newVehicleCategory);
+      setVehicleCategories([...vehicleCategories, res.data.data]);
+
       setVehicleCategoryForm({ image: '', vehicleName: '', perKmCharge: '', perMinuteCharge: '' });
       setVehicleCategoryDialogOpen(false);
     }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingVehicleCategory && vehicleCategoryForm.vehicleName.trim() && vehicleCategoryForm.perKmCharge && vehicleCategoryForm.perMinuteCharge) {
-      setVehicleCategories(vehicleCategories.map(vehicle => 
-        vehicle.id === editingVehicleCategory.id 
-          ? { 
-              ...vehicle, 
-              image: vehicleCategoryForm.image || vehicle.image,
-              vehicleName: vehicleCategoryForm.vehicleName.trim(),
-              perKmCharge: parseFloat(vehicleCategoryForm.perKmCharge),
-              perMinuteCharge: parseFloat(vehicleCategoryForm.perMinuteCharge)
-            }
-          : vehicle
+      const res = await axios.put(`${API_BASE_URL}/api/vehiclecategories/${editingVehicleCategory.id}`, {
+        image: vehicleCategoryForm.image,
+        vehicleName: vehicleCategoryForm.vehicleName,
+        perKmCharge: parseFloat(vehicleCategoryForm.perKmCharge),
+        perMinuteCharge: parseFloat(vehicleCategoryForm.perMinuteCharge),
+      });
+      setVehicleCategories(vehicleCategories.map(vc =>
+        vc.id === editingVehicleCategory.id ? res.data.data : vc
       ));
+
       setVehicleCategoryForm({ image: '', vehicleName: '', perKmCharge: '', perMinuteCharge: '' });
       setEditDialogOpen(false);
       setEditingVehicleCategory(null);
@@ -67,7 +71,7 @@ export const VehicleCategoryPage = () => {
 
   const handleEdit = (vehicleCategory: VehicleCategory) => {
     setEditingVehicleCategory(vehicleCategory);
-    setVehicleCategoryForm({ 
+    setVehicleCategoryForm({
       image: vehicleCategory.image,
       vehicleName: vehicleCategory.vehicleName,
       perKmCharge: vehicleCategory.perKmCharge.toString(),
@@ -76,8 +80,9 @@ export const VehicleCategoryPage = () => {
     setEditDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setVehicleCategories(vehicleCategories.filter(vehicle => vehicle.id !== id));
+  const handleDelete = async (id: number) => {
+    await axios.delete(`${API_BASE_URL}/api/vehiclecategories/${id}`);
+    setVehicleCategories(vehicleCategories.filter(vc => vc.id !== id));
   };
 
   return (
@@ -106,13 +111,13 @@ export const VehicleCategoryPage = () => {
                   <Input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, image: e.target.value})}
+                    onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, image: e.target.value })}
                   />
                 </div>
                 <Input
                   placeholder="Vehicle name"
                   value={vehicleCategoryForm.vehicleName}
-                  onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, vehicleName: e.target.value})}
+                  onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, vehicleName: e.target.value })}
                   required
                 />
                 <Input
@@ -120,7 +125,7 @@ export const VehicleCategoryPage = () => {
                   step="0.01"
                   placeholder="Per km charge"
                   value={vehicleCategoryForm.perKmCharge}
-                  onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, perKmCharge: e.target.value})}
+                  onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, perKmCharge: e.target.value })}
                   required
                 />
                 <Input
@@ -128,7 +133,7 @@ export const VehicleCategoryPage = () => {
                   step="0.01"
                   placeholder="Per minute charge"
                   value={vehicleCategoryForm.perMinuteCharge}
-                  onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, perMinuteCharge: e.target.value})}
+                  onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, perMinuteCharge: e.target.value })}
                   required
                 />
                 <Button type="submit" className="w-full">Submit</Button>
@@ -149,13 +154,13 @@ export const VehicleCategoryPage = () => {
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, image: e.target.value})}
+                  onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, image: e.target.value })}
                 />
               </div>
               <Input
                 placeholder="Vehicle name"
                 value={vehicleCategoryForm.vehicleName}
-                onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, vehicleName: e.target.value})}
+                onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, vehicleName: e.target.value })}
                 required
               />
               <Input
@@ -163,7 +168,7 @@ export const VehicleCategoryPage = () => {
                 step="0.01"
                 placeholder="Per km charge"
                 value={vehicleCategoryForm.perKmCharge}
-                onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, perKmCharge: e.target.value})}
+                onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, perKmCharge: e.target.value })}
                 required
               />
               <Input
@@ -171,7 +176,7 @@ export const VehicleCategoryPage = () => {
                 step="0.01"
                 placeholder="Per minute charge"
                 value={vehicleCategoryForm.perMinuteCharge}
-                onChange={(e) => setVehicleCategoryForm({...vehicleCategoryForm, perMinuteCharge: e.target.value})}
+                onChange={(e) => setVehicleCategoryForm({ ...vehicleCategoryForm, perMinuteCharge: e.target.value })}
                 required
               />
               <Button type="submit" className="w-full">Update</Button>
@@ -191,46 +196,55 @@ export const VehicleCategoryPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {vehicleCategories.map((vehicle) => (
-              <TableRow key={vehicle.id}>
-                <TableCell>{vehicle.id}</TableCell>
-                <TableCell>
-                  <img src={vehicle.image} alt={vehicle.vehicleName} className="w-10 h-10 rounded object-cover" />
-                </TableCell>
-                <TableCell>{vehicle.vehicleName}</TableCell>
-                <TableCell>${vehicle.perKmCharge}</TableCell>
-                <TableCell>${vehicle.perMinuteCharge}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(vehicle)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the vehicle category.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(vehicle.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+  {vehicleCategories.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} className="text-center text-muted-foreground">
+        No vehicle category found. Create your first vehicle category!
+      </TableCell>
+    </TableRow>
+  ) : (
+    vehicleCategories.map((vehicle) => (
+      <TableRow key={vehicle.id}>
+        <TableCell>{vehicle.id}</TableCell>
+        <TableCell>
+          <img src={vehicle.image} alt={vehicle.vehicleName} className="w-10 h-10 rounded object-cover" />
+        </TableCell>
+        <TableCell>{vehicle.vehicleName}</TableCell>
+        <TableCell>${vehicle.perKmCharge}</TableCell>
+        <TableCell>${vehicle.perMinuteCharge}</TableCell>
+        <TableCell>
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" onClick={() => handleEdit(vehicle)}>
+              <Edit className="w-4 h-4" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the vehicle category.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDelete(vehicle.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+
         </Table>
       </Card>
     </div>

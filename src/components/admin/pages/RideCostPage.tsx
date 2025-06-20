@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface RideCost {
   id: number;
@@ -259,81 +259,83 @@ export const RideCostPage = () => {
           </DialogContent>
         </Dialog>
 
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Base Fare</TableHead>
-                <TableHead>Min Km</TableHead>
-                <TableHead>Extra/Km</TableHead>
-                <TableHead>Inc. Minutes</TableHead>
-                <TableHead>Extra/Min</TableHead>
-                <TableHead>Pick Charges</TableHead>
-                <TableHead>Night Charges</TableHead>
-                <TableHead>Cancel Fee</TableHead>
-                <TableHead>Insurance</TableHead>
-                <TableHead>Admin Extra</TableHead>
-                <TableHead>Discount</TableHead>
-                <TableHead>Peak Hr/Km</TableHead>
-                <TableHead>Peak Hr/Min</TableHead>
-                <TableHead>Peak Date/Km</TableHead>
-                <TableHead>Peak Date/Min</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rideCosts.map((rideCost) => (
-                <TableRow key={rideCost.id}>
-                  <TableCell>{rideCost.id}</TableCell>
-                  <TableCell>₹{rideCost.baseFare}</TableCell>
-                  <TableCell>{rideCost.minKmIncluded}</TableCell>
-                  <TableCell>₹{rideCost.extraPerKm}</TableCell>
-                  <TableCell>{rideCost.includedMinutes}</TableCell>
-                  <TableCell>₹{rideCost.extraPerMin}</TableCell>
-                  <TableCell>₹{rideCost.pickCharges}</TableCell>
-                  <TableCell>₹{rideCost.nightCharges}</TableCell>
-                  <TableCell>₹{rideCost.cancellationFee}</TableCell>
-                  <TableCell>₹{rideCost.insurance}</TableCell>
-                  <TableCell>₹{rideCost.extraChargesFromAdmin}</TableCell>
-                  <TableCell>₹{rideCost.discount}</TableCell>
-                  <TableCell>₹{rideCost.peakHoursChargePerKm}</TableCell>
-                  <TableCell>₹{rideCost.peakHoursChargePerMin}</TableCell>
-                  <TableCell>₹{rideCost.peakDateChargePerKm}</TableCell>
-                  <TableCell>₹{rideCost.peakDateChargePerMin}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(rideCost)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete the ride cost model.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(rideCost.id)}>
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+        <ScrollArea className="w-full">
+          <div className="min-w-[1200px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Base Fare</TableHead>
+                  <TableHead>Min Km</TableHead>
+                  <TableHead>Extra/Km</TableHead>
+                  <TableHead>Inc. Minutes</TableHead>
+                  <TableHead>Extra/Min</TableHead>
+                  <TableHead>Pick Charges</TableHead>
+                  <TableHead>Night Charges</TableHead>
+                  <TableHead>Cancel Fee</TableHead>
+                  <TableHead>Insurance</TableHead>
+                  <TableHead>Admin Extra</TableHead>
+                  <TableHead>Discount</TableHead>
+                  <TableHead>Peak Hr/Km</TableHead>
+                  <TableHead>Peak Hr/Min</TableHead>
+                  <TableHead>Peak Date/Km</TableHead>
+                  <TableHead>Peak Date/Min</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {rideCosts.map((rideCost) => (
+                  <TableRow key={rideCost.id}>
+                    <TableCell>{rideCost.id}</TableCell>
+                    <TableCell>₹{rideCost.baseFare}</TableCell>
+                    <TableCell>{rideCost.minKmIncluded}</TableCell>
+                    <TableCell>₹{rideCost.extraPerKm}</TableCell>
+                    <TableCell>{rideCost.includedMinutes}</TableCell>
+                    <TableCell>₹{rideCost.extraPerMin}</TableCell>
+                    <TableCell>₹{rideCost.pickCharges}</TableCell>
+                    <TableCell>₹{rideCost.nightCharges}</TableCell>
+                    <TableCell>₹{rideCost.cancellationFee}</TableCell>
+                    <TableCell>₹{rideCost.insurance}</TableCell>
+                    <TableCell>₹{rideCost.extraChargesFromAdmin}</TableCell>
+                    <TableCell>₹{rideCost.discount}</TableCell>
+                    <TableCell>₹{rideCost.peakHoursChargePerKm}</TableCell>
+                    <TableCell>₹{rideCost.peakHoursChargePerMin}</TableCell>
+                    <TableCell>₹{rideCost.peakDateChargePerKm}</TableCell>
+                    <TableCell>₹{rideCost.peakDateChargePerMin}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(rideCost)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the ride cost model.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(rideCost.id)}>
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
       </Card>
     </div>
   );

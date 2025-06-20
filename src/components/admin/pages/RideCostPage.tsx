@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface RideCost {
   id: number;
+  modelName: string;
   baseFare: number;
   minKmIncluded: number;
   extraPerKm: number;
@@ -31,6 +33,7 @@ export const RideCostPage = () => {
   const [rideCosts, setRideCosts] = useState<RideCost[]>([]);
   
   const [rideCostForm, setRideCostForm] = useState({
+    modelName: '',
     baseFare: '',
     minKmIncluded: '',
     extraPerKm: '',
@@ -57,6 +60,7 @@ export const RideCostPage = () => {
     
     const newRideCost: RideCost = {
       id: Date.now(),
+      modelName: rideCostForm.modelName,
       baseFare: Number(rideCostForm.baseFare),
       minKmIncluded: Number(rideCostForm.minKmIncluded),
       extraPerKm: Number(rideCostForm.extraPerKm),
@@ -76,6 +80,7 @@ export const RideCostPage = () => {
     
     setRideCosts([...rideCosts, newRideCost]);
     setRideCostForm({
+      modelName: '',
       baseFare: '',
       minKmIncluded: '',
       extraPerKm: '',
@@ -100,6 +105,7 @@ export const RideCostPage = () => {
     if (editingRideCost) {
       const updatedRideCost: RideCost = {
         ...editingRideCost,
+        modelName: rideCostForm.modelName,
         baseFare: Number(rideCostForm.baseFare),
         minKmIncluded: Number(rideCostForm.minKmIncluded),
         extraPerKm: Number(rideCostForm.extraPerKm),
@@ -121,6 +127,7 @@ export const RideCostPage = () => {
         cost.id === editingRideCost.id ? updatedRideCost : cost
       ));
       setRideCostForm({
+        modelName: '',
         baseFare: '',
         minKmIncluded: '',
         extraPerKm: '',
@@ -145,6 +152,7 @@ export const RideCostPage = () => {
   const handleEdit = (rideCost: RideCost) => {
     setEditingRideCost(rideCost);
     setRideCostForm({
+      modelName: rideCost.modelName,
       baseFare: rideCost.baseFare.toString(),
       minKmIncluded: rideCost.minKmIncluded.toString(),
       extraPerKm: rideCost.extraPerKm.toString(),
@@ -169,6 +177,7 @@ export const RideCostPage = () => {
   };
 
   const formFields = [
+    { key: 'modelName', label: 'Model Name', type: 'text' },
     { key: 'baseFare', label: 'Base Fare', type: 'number' },
     { key: 'minKmIncluded', label: 'Min Km Included', type: 'number' },
     { key: 'extraPerKm', label: 'Extra Per Km', type: 'number' },
@@ -260,26 +269,12 @@ export const RideCostPage = () => {
         </Dialog>
 
         <ScrollArea className="w-full">
-          <div className="min-w-[1200px]">
+          <div className="min-w-[400px]">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Base Fare</TableHead>
-                  <TableHead>Min Km</TableHead>
-                  <TableHead>Extra/Km</TableHead>
-                  <TableHead>Inc. Minutes</TableHead>
-                  <TableHead>Extra/Min</TableHead>
-                  <TableHead>Pick Charges</TableHead>
-                  <TableHead>Night Charges</TableHead>
-                  <TableHead>Cancel Fee</TableHead>
-                  <TableHead>Insurance</TableHead>
-                  <TableHead>Admin Extra</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead>Peak Hr/Km</TableHead>
-                  <TableHead>Peak Hr/Min</TableHead>
-                  <TableHead>Peak Date/Km</TableHead>
-                  <TableHead>Peak Date/Min</TableHead>
+                  <TableHead>Model Name</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -287,21 +282,7 @@ export const RideCostPage = () => {
                 {rideCosts.map((rideCost) => (
                   <TableRow key={rideCost.id}>
                     <TableCell>{rideCost.id}</TableCell>
-                    <TableCell>₹{rideCost.baseFare}</TableCell>
-                    <TableCell>{rideCost.minKmIncluded}</TableCell>
-                    <TableCell>₹{rideCost.extraPerKm}</TableCell>
-                    <TableCell>{rideCost.includedMinutes}</TableCell>
-                    <TableCell>₹{rideCost.extraPerMin}</TableCell>
-                    <TableCell>₹{rideCost.pickCharges}</TableCell>
-                    <TableCell>₹{rideCost.nightCharges}</TableCell>
-                    <TableCell>₹{rideCost.cancellationFee}</TableCell>
-                    <TableCell>₹{rideCost.insurance}</TableCell>
-                    <TableCell>₹{rideCost.extraChargesFromAdmin}</TableCell>
-                    <TableCell>₹{rideCost.discount}</TableCell>
-                    <TableCell>₹{rideCost.peakHoursChargePerKm}</TableCell>
-                    <TableCell>₹{rideCost.peakHoursChargePerMin}</TableCell>
-                    <TableCell>₹{rideCost.peakDateChargePerKm}</TableCell>
-                    <TableCell>₹{rideCost.peakDateChargePerMin}</TableCell>
+                    <TableCell>{rideCost.modelName}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm" onClick={() => handleEdit(rideCost)}>

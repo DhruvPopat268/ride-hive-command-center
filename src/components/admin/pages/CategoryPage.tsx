@@ -33,7 +33,7 @@ export const CategoryPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL 
+
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -45,7 +45,7 @@ export const CategoryPage = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/categories`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL }/api/categories`);
       const result: ApiResponse = await response.json();
       
       if (result.success && Array.isArray(result.data)) {

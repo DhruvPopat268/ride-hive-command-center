@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Plus, Edit, Trash2, Eye, Clock, Calendar } from 'lucide-react';
@@ -83,16 +84,16 @@ export const RideCostPage = () => {
   const handleRideCostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-   const payload = Object.fromEntries(
-  Object.entries(rideCostForm).map(([key, value]) => {
-    return [
-      key,
-      key === 'modelName' ? value : parseFloat(value)
-    ];
-  })
-);
+    const payload = Object.fromEntries(
+      Object.entries(rideCostForm).map(([key, value]) => {
+        return [
+          key,
+          key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
+        ];
+      })
+    );
 
-    payload['modelName'] = rideCostForm.modelName;
+    payload['modelName'] = String(rideCostForm.modelName || '');
 
     await axios.post(`${API_BASE_URL}/ride-costs`, payload);
     fetchRideCosts();
@@ -105,10 +106,12 @@ export const RideCostPage = () => {
 
     if (!editingRideCost?._id) return;
     const payload = Object.fromEntries(
-      Object.entries(rideCostForm).map(([key, value]) => [key, parseFloat(value)])
-
+      Object.entries(rideCostForm).map(([key, value]) => [
+        key, 
+        key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
+      ])
     );
-    payload['modelName'] = rideCostForm.modelName;
+    payload['modelName'] = String(rideCostForm.modelName || '');
 
     await axios.put(`${API_BASE_URL}/ride-costs/${editingRideCost._id}`, payload);
     fetchRideCosts();

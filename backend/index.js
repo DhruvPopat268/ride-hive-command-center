@@ -9,12 +9,15 @@ const priceCategoryRoutes = require('./routes/priceCategoryRoutes');
 const rideCostRoutes = require('./routes/rideCostRoutes');
 const connectToDb = require('./database/db');
 
+
 const app = express();
 
 // Middleware
 app.use(cors({
   origin: [
+    "http://localhost:8081",
     "http://localhost:8080"
+
   ],
   credentials: true
 }));

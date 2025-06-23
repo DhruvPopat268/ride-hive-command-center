@@ -43,12 +43,12 @@ const menuItems = [
   // { icon: Shield, label: "Safety", key: "safety" },
   // { icon: Settings, label: "Settings", key: "settings" },
 
-  { icon: Wallet, label: "Payments", key: "payments" },
-  { icon: BarChart3, label: "Analytics", key: "analytics" },
-  { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },
-  { icon: Bell, label: "Notifications", key: "notifications" },
-  { icon: Shield, label: "Safety", key: "safety" },
-  { icon: Settings, label: "Settings", key: "settings" },
+  // { icon: Wallet, label: "Payments", key: "payments" },
+  // { icon: BarChart3, label: "Analytics", key: "analytics" },
+  // { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },
+  // { icon: Bell, label: "Notifications", key: "notifications" },
+  // { icon: Shield, label: "Safety", key: "safety" },
+  // { icon: Settings, label: "Settings", key: "settings" },
 
 ];
 

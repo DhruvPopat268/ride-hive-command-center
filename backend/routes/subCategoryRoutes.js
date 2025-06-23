@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const mongoose=require('mongoose')
 const SubCategory = require('../models/SubCategory');
 const Category = require('../models/Category');
+const { ObjectId } = mongoose.Types;
 
 // Get all subcategories
 router.get('/', async (req, res) => {
@@ -17,6 +19,14 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.get('/:id',async(req,res)=>{
+  const subCategoryId = req.params
+
+  const subcategory = await SubCategory.findOne({_id: new ObjectId(subCategoryId)})
+
+  res.json(subcategory)
+})
 
 // Create subcategory
 router.post('/', async (req, res) => {

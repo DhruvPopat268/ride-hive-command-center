@@ -50,7 +50,7 @@ export const RideCostPage = () => {
   }, []);
 
   const fetchRideCosts = async () => {
-    const res = await axios.get(`${API_BASE_URL}/ride-costs`);
+    const res = await axios.get(`${API_BASE_URL}/api/ride-costs`);
     setRideCosts(res.data);
   };
 
@@ -68,7 +68,7 @@ export const RideCostPage = () => {
 
     payload['modelName'] = rideCostForm.modelName;
 
-    await axios.post(`${API_BASE_URL}/ride-costs`, payload);
+    await axios.post(`${API_BASE_URL}/api/ride-costs`, payload);
     fetchRideCosts();
     setRideCostDialogOpen(false);
     setRideCostForm({});
@@ -84,7 +84,7 @@ export const RideCostPage = () => {
     );
     payload['modelName'] = rideCostForm.modelName;
 
-    await axios.put(`${API_BASE_URL}/ride-costs/${editingRideCost._id}`, payload);
+    await axios.put(`${API_BASE_URL}/api/ride-costs/${editingRideCost._id}`, payload);
     fetchRideCosts();
     setEditDialogOpen(false);
     setEditingRideCost(null);
@@ -118,7 +118,8 @@ export const RideCostPage = () => {
     { key: 'nightCharges', label: 'Night Charges', type: 'number' },
     { key: 'cancellationFee', label: 'Cancellation Fee', type: 'number' },
     { key: 'insurance', label: 'Insurance', type: 'number' },
-    { key: 'extraChargesFromAdmin', label: 'Extra Charges from Admin', type: 'number' },
+    { key: 'extraChargesFromAdmin', label: 'Extra Charges from Admin in %', type: 'number' },
+    { key: 'GST', label: 'GST in %', type: 'number' },
     { key: 'discount', label: 'Discount', type: 'number' },
     { key: 'peakHoursChargePerKm', label: 'Peak Hours Charge Per Km', type: 'number' },
     { key: 'peakHoursChargePerMin', label: 'Peak Hours Charge Per Minute', type: 'number' },
@@ -161,7 +162,7 @@ export const RideCostPage = () => {
                             [field.key]: e.target.value
                           }))
                         }
-                        required
+                       
                       />
                     </div>
                   ))}
@@ -192,7 +193,7 @@ export const RideCostPage = () => {
                           [field.key]: e.target.value
                         }))
                       }
-                      required
+                     
                     />
                   </div>
                 ))}
@@ -207,7 +208,7 @@ export const RideCostPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Model Name</TableHead>
-                <TableHead>Base Fare</TableHead>
+               
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -222,7 +223,7 @@ export const RideCostPage = () => {
                 rideCosts.map((rideCost) => (
                   <TableRow key={rideCost._id}>
                     <TableCell>{rideCost.modelName}</TableCell>
-                    <TableCell>{rideCost.baseFare}</TableCell>
+                  
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm" onClick={() => {

@@ -2,21 +2,22 @@ const mongoose = require('mongoose');
 
 const rideCostSchema = new mongoose.Schema({
   modelName: { type: String, required: true },
-  baseFare: { type: Number, required: true },
-  minKmIncluded: { type: Number, required: true },
-  extraPerKm: { type: Number, required: true },
-  includedMinutes: { type: Number, required: true },
-  extraPerMin: { type: Number, required: true },
-  pickCharges: { type: Number, required: true },
-  nightCharges: { type: Number, required: true },
-  cancellationFee: { type: Number, required: true },
-  insurance: { type: Number, required: true },
-  extraChargesFromAdmin: { type: Number, required: true },
-  discount: { type: Number, required: true },
-  peakHoursChargePerKm: { type: Number, required: true },
-  peakHoursChargePerMin: { type: Number, required: true },
-  peakDateChargePerKm: { type: Number, required: true },
-  peakDateChargePerMin: { type: Number, required: true }
+  baseFare: { type: Number,  },
+  minKmIncluded: { type: Number, },
+  extraPerKm: { type: Number,},
+  includedMinutes: { type: Number,},
+  extraPerMin: { type: Number, },
+  pickCharges: { type: Number,  },
+  nightCharges: { type: Number,  },
+  cancellationFee: { type: Number, },
+  insurance: { type: Number, },
+  extraChargesFromAdmin: { type: Number, },
+  gst:{ type: Number, },
+  discount: { type: Number, },
+  peakHoursChargePerKm: { type: Number, },
+  peakHoursChargePerMin: { type: Number, },
+  peakDateChargePerKm: { type: Number, },
+  peakDateChargePerMin: { type: Number, }
 }, { timestamps: true });
 
 module.exports = mongoose.model('RideCost', rideCostSchema);

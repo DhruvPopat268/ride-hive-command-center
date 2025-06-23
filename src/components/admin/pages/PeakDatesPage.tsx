@@ -1,6 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +10,14 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PeakDate {
-  _id?: string;
+  _id: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -28,79 +29,49 @@ interface PeakDate {
 
 export const PeakDatesPage = () => {
   const [peakDates, setPeakDates] = useState<PeakDate[]>([]);
-  const [peakDateForm, setPeakDateForm] = useState<Partial<PeakDate>>({});
-  const [peakDateDialogOpen, setPeakDateDialogOpen] = useState(false);
-  const [editingPeakDate, setEditingPeakDate] = useState<PeakDate | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState<'peak_hours' | 'peak_dates'>('peak_dates');
+  const [formData, setFormData] = useState({
+    name: '',
+    startTime: '',
+    endTime: '',
+    startDate: '',
+    endDate: '',
+    chargePerKm: '',
+    chargePerMin: ''
+  });
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-  useEffect(() => {
-    fetchPeakDates();
-  }, []);
-
-  const fetchPeakDates = async () => {
-    // Mock data for now - replace with actual API call
-    setPeakDates([]);
-  };
-
-  const handlePeakDateSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newPeakDate: PeakDate = {
-      _id: Date.now().toString(), // Mock ID
-      name: peakDateForm.name || '',
-      startDate: peakDateForm.startDate || '',
-      endDate: peakDateForm.endDate || '',
-      startTime: peakDateForm.startTime || '',
-      endTime: peakDateForm.endTime || '',
-      chargePerKm: parseFloat(peakDateForm.chargePerKm?.toString() || '0'),
-      chargePerMin: parseFloat(peakDateForm.chargePerMin?.toString() || '0')
-    };
-
-    setPeakDates([...peakDates, newPeakDate]);
-    setPeakDateDialogOpen(false);
-    setPeakDateForm({});
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!editingPeakDate?._id) return;
+    if (selectedType === 'peak_dates') {
+      const newPeakDate: PeakDate = {
+        _id: Date.now().toString(),
+        name: formData.name,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        chargePerKm: parseFloat(formData.chargePerKm),
+        chargePerMin: parseFloat(formData.chargePerMin)
+      };
+      setPeakDates([...peakDates, newPeakDate]);
+    }
     
-    const updatedPeakDate: PeakDate = {
-      ...editingPeakDate,
-      name: peakDateForm.name || '',
-      startDate: peakDateForm.startDate || '',
-      endDate: peakDateForm.endDate || '',
-      startTime: peakDateForm.startTime || '',
-      endTime: peakDateForm.endTime || '',
-      chargePerKm: parseFloat(peakDateForm.chargePerKm?.toString() || '0'),
-      chargePerMin: parseFloat(peakDateForm.chargePerMin?.toString() || '0')
-    };
-
-    setPeakDates(peakDates.map(pd => pd._id === editingPeakDate._id ? updatedPeakDate : pd));
-    setEditDialogOpen(false);
-    setEditingPeakDate(null);
-    setPeakDateForm({});
-  };
-
-  const handleEdit = (peakDate: PeakDate) => {
-    setEditingPeakDate(peakDate);
-    setPeakDateForm({
-      name: peakDate.name,
-      startDate: peakDate.startDate,
-      endDate: peakDate.endDate,
-      startTime: peakDate.startTime,
-      endTime: peakDate.endTime,
-      chargePerKm: peakDate.chargePerKm,
-      chargePerMin: peakDate.chargePerMin
+    setDialogOpen(false);
+    setFormData({
+      name: '',
+      startTime: '',
+      endTime: '',
+      startDate: '',
+      endDate: '',
+      chargePerKm: '',
+      chargePerMin: ''
     });
-    setEditDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setPeakDates(peakDates.filter(pd => pd._id !== id));
+    setPeakDates(peakDates.filter(date => date._id !== id));
   };
 
   return (
@@ -111,70 +82,109 @@ export const PeakDatesPage = () => {
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Peak Dates Configuration</h2>
-          <Dialog open={peakDateDialogOpen} onOpenChange={setPeakDateDialogOpen}>
+          <h2 className="text-xl font-semibold">Peak Dates</h2>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setPeakDateForm({})}>
+              <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Peak Dates
+                Add Peak Hours / Peak Dates
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Add Peak Dates</DialogTitle>
+                <DialogTitle>Add Peak Hours / Peak Dates</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handlePeakDateSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Type</label>
+                  <Select value={selectedType} onValueChange={(value: 'peak_hours' | 'peak_dates') => setSelectedType(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="peak_hours">Peak Hours</SelectItem>
+                      <SelectItem value="peak_dates">Peak Dates</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Name</label>
                   <Input
-                    placeholder="e.g., Holiday Season"
-                    value={peakDateForm.name || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder={selectedType === 'peak_hours' ? 'Morning Rush' : 'Holiday Period'}
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Start Date</label>
-                    <Input
-                      type="date"
-                      value={peakDateForm.startDate || ''}
-                      onChange={(e) => setPeakDateForm(prev => ({ ...prev, startDate: e.target.value }))}
-                      required
-                    />
+                {selectedType === 'peak_hours' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Start Time</label>
+                      <Input
+                        type="time"
+                        value={formData.startTime}
+                        onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">End Time</label>
+                      <Input
+                        type="time"
+                        value={formData.endTime}
+                        onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                        required
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">End Date</label>
-                    <Input
-                      type="date"
-                      value={peakDateForm.endDate || ''}
-                      onChange={(e) => setPeakDateForm(prev => ({ ...prev, endDate: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
+                )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Start Time</label>
-                    <Input
-                      type="time"
-                      value={peakDateForm.startTime || ''}
-                      onChange={(e) => setPeakDateForm(prev => ({ ...prev, startTime: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">End Time</label>
-                    <Input
-                      type="time"
-                      value={peakDateForm.endTime || ''}
-                      onChange={(e) => setPeakDateForm(prev => ({ ...prev, endTime: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
+                {selectedType === 'peak_dates' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Start Date</label>
+                        <Input
+                          type="date"
+                          value={formData.startDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">End Date</label>
+                        <Input
+                          type="date"
+                          value={formData.endDate}
+                          onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Start Time</label>
+                        <Input
+                          type="time"
+                          value={formData.startTime}
+                          onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">End Time</label>
+                        <Input
+                          type="time"
+                          value={formData.endTime}
+                          onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -183,8 +193,8 @@ export const PeakDatesPage = () => {
                       type="number"
                       step="0.01"
                       placeholder="0"
-                      value={peakDateForm.chargePerKm || ''}
-                      onChange={(e) => setPeakDateForm(prev => ({ ...prev, chargePerKm: parseFloat(e.target.value) }))}
+                      value={formData.chargePerKm}
+                      onChange={(e) => setFormData(prev => ({ ...prev, chargePerKm: e.target.value }))}
                       required
                     />
                   </div>
@@ -194,171 +204,78 @@ export const PeakDatesPage = () => {
                       type="number"
                       step="0.01"
                       placeholder="0"
-                      value={peakDateForm.chargePerMin || ''}
-                      onChange={(e) => setPeakDateForm(prev => ({ ...prev, chargePerMin: parseFloat(e.target.value) }))}
+                      value={formData.chargePerMin}
+                      onChange={(e) => setFormData(prev => ({ ...prev, chargePerMin: e.target.value }))}
                       required
                     />
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full">Add Peak Dates</Button>
+                <Button type="submit" className="w-full">Add</Button>
               </form>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Edit Dialog */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Edit Peak Dates</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <Input
-                  value={peakDateForm.name || ''}
-                  onChange={(e) => setPeakDateForm(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Start Date</label>
-                  <Input
-                    type="date"
-                    value={peakDateForm.startDate || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, startDate: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">End Date</label>
-                  <Input
-                    type="date"
-                    value={peakDateForm.endDate || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, endDate: e.target.value }))}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Start Time</label>
-                  <Input
-                    type="time"
-                    value={peakDateForm.startTime || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, startTime: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">End Time</label>
-                  <Input
-                    type="time"
-                    value={peakDateForm.endTime || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, endTime: e.target.value }))}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Charge Per Km (₹)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={peakDateForm.chargePerKm || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, chargePerKm: parseFloat(e.target.value) }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Charge Per Minute (₹)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={peakDateForm.chargePerMin || ''}
-                    onChange={(e) => setPeakDateForm(prev => ({ ...prev, chargePerMin: parseFloat(e.target.value) }))}
-                    required
-                  />
-                </div>
-              </div>
-
-              <Button type="submit" className="w-full">Update Peak Dates</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <ScrollArea className="w-full">
-          <Table>
-            <TableHeader>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Date Range</TableHead>
+              <TableHead>Time Range</TableHead>
+              <TableHead>Charge Per Km</TableHead>
+              <TableHead>Charge Per Min</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {peakDates.length === 0 ? (
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Date Range</TableHead>
-                <TableHead>Time Range</TableHead>
-                <TableHead>Charge Per Km</TableHead>
-                <TableHead>Charge Per Minute</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                  No peak dates configured. Add your first one!
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {peakDates.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
-                    No peak dates configured. Add your first one!
+            ) : (
+              peakDates.map((date) => (
+                <TableRow key={date._id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {date.name}
+                    </div>
+                  </TableCell>
+                  <TableCell>{date.startDate} to {date.endDate}</TableCell>
+                  <TableCell>{date.startTime} - {date.endTime}</TableCell>
+                  <TableCell>₹{date.chargePerKm}</TableCell>
+                  <TableCell>₹{date.chargePerMin}</TableCell>
+                  <TableCell>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will delete the peak date configuration permanently.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(date._id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
-              ) : (
-                peakDates.map((peakDate) => (
-                  <TableRow key={peakDate._id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {peakDate.name}
-                      </div>
-                    </TableCell>
-                    <TableCell>{`${peakDate.startDate} to ${peakDate.endDate}`}</TableCell>
-                    <TableCell>{`${peakDate.startTime} - ${peakDate.endTime}`}</TableCell>
-                    <TableCell>₹{peakDate.chargePerKm}</TableCell>
-                    <TableCell>₹{peakDate.chargePerMin}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(peakDate)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will delete the peak dates configuration permanently.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(peakDate._id!)}>
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );

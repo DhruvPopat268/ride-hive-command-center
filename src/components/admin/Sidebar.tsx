@@ -28,9 +28,6 @@ interface SidebarProps {
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
-  // { icon: Car, label: "Drivers", key: "drivers", count: 12 },
-  // { icon: Users, label: "Riders", key: "riders", count: 245 },
-  // { icon: MapPin, label: "Rides", key: "rides", count: 89 },
   { icon: Tags, label: "Category", key: "category" },
   { icon: FolderTree, label: "Sub Category", key: "subcategory" },
   { icon: Truck, label: "Vehicle Category", key: "vehiclecategory" },
@@ -38,14 +35,6 @@ const menuItems = [
   { icon: Calculator, label: "Ride Cost", key: "ridecost" },
   { icon: Clock, label: "Peak Hours", key: "peakhours" },
   { icon: Calendar, label: "Peak Dates", key: "peakdates" },
-
-  // { icon: Wallet, label: "Payments", key: "payments" },
-  // { icon: BarChart3, label: "Analytics", key: "analytics" },
-  // { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },
-  // { icon: Bell, label: "Notifications", key: "notifications" },
-  // { icon: Shield, label: "Safety", key: "safety" },
-  // { icon: Settings, label: "Settings", key: "settings" },
-
   { icon: Wallet, label: "Payments", key: "payments" },
   { icon: BarChart3, label: "Analytics", key: "analytics" },
   { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },

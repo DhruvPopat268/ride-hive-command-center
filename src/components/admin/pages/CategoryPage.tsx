@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import axios from 'axios';
 
 interface Category {
   id: string;
@@ -33,33 +34,34 @@ export const CategoryPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-
-
   // Fetch categories on component mount
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(`${import.meta.env.VITE_API_URL }/api/categories`);
-      const result: ApiResponse = await response.json();
-      
-      if (result.success && Array.isArray(result.data)) {
-        setCategories(result.data);
-      } else {
-        setError(result.message || 'Failed to fetch categories');
-      }
-    } catch (err) {
-      setError('Network error. Please check your connection.');
-      console.error('Fetch categories error:', err);
-    } finally {
-      setLoading(false);
+const fetchCategories = async () => {
+  
+
+  try {
+    setLoading(true);
+    setError(null);
+
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
+    const result: ApiResponse = response.data;
+
+    if (result.success && Array.isArray(result.data)) {
+      setCategories(result.data);
+    } else {
+      setError(result.message || 'Failed to fetch categories');
     }
-  };
+  } catch (err) {
+    setError('Network error. Please check your connection.');
+    console.error('Fetch categories error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();

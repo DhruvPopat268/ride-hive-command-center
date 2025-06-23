@@ -16,8 +16,9 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:8081",
-    "http://localhost:8080"
-
+    "http://localhost:8080",
+    "https://driver-go-admin-frontend.onrender.com",
+    "https://drive-go-frontend.onrender.com"
   ],
   credentials: true
 }));

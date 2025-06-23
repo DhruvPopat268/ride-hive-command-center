@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Clock } from 'lucide-react';
+import { Plus, Trash2, Clock, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,10 +19,12 @@ import { Card } from '@/components/ui/card';
 interface PeakHour {
   _id: string;
   name: string;
+  type: 'peak_hours' | 'peak_dates';
   startTime: string;
   endTime: string;
-  chargePerKm: number;
-  chargePerMin: number;
+  startDate?: string;
+  endDate?: string;
+  price: number;
 }
 
 export const PeakHoursPage = () => {
@@ -35,25 +37,24 @@ export const PeakHoursPage = () => {
     endTime: '',
     startDate: '',
     endDate: '',
-    chargePerKm: '',
-    chargePerMin: ''
+    price: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (selectedType === 'peak_hours') {
-      const newPeakHour: PeakHour = {
-        _id: Date.now().toString(),
-        name: formData.name,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        chargePerKm: parseFloat(formData.chargePerKm),
-        chargePerMin: parseFloat(formData.chargePerMin)
-      };
-      setPeakHours([...peakHours, newPeakHour]);
-    }
+    const newPeakHour: PeakHour = {
+      _id: Date.now().toString(),
+      name: formData.name,
+      type: selectedType,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      startDate: selectedType === 'peak_dates' ? formData.startDate : undefined,
+      endDate: selectedType === 'peak_dates' ? formData.endDate : undefined,
+      price: parseFloat(formData.price)
+    };
     
+    setPeakHours([...peakHours, newPeakHour]);
     setDialogOpen(false);
     setFormData({
       name: '',
@@ -61,8 +62,7 @@ export const PeakHoursPage = () => {
       endTime: '',
       startDate: '',
       endDate: '',
-      chargePerKm: '',
-      chargePerMin: ''
+      price: ''
     });
   };
 
@@ -70,15 +70,28 @@ export const PeakHoursPage = () => {
     setPeakHours(peakHours.filter(hour => hour._id !== id));
   };
 
+  const handleTypeChange = (value: 'peak_hours' | 'peak_dates') => {
+    setSelectedType(value);
+    // Reset form data when type changes
+    setFormData({
+      name: '',
+      startTime: '',
+      endTime: '',
+      startDate: '',
+      endDate: '',
+      price: ''
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Peak Hours Management</h1>
+        <h1 className="text-3xl font-bold">Peak Hours / Peak Dates Management</h1>
       </div>
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Peak Hours</h2>
+          <h2 className="text-xl font-semibold">Peak Hours / Peak Dates</h2>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -93,7 +106,7 @@ export const PeakHoursPage = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Type</label>
-                  <Select value={selectedType} onValueChange={(value: 'peak_hours' | 'peak_dates') => setSelectedType(value)}>
+                  <Select value={selectedType} onValueChange={handleTypeChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -105,106 +118,71 @@ export const PeakHoursPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <label className="block text-sm font-medium mb-1">
+                    {selectedType === 'peak_hours' ? 'Peak Hour 1' : 'Peak Date Range 1'}
+                  </label>
                   <Input
-                    placeholder={selectedType === 'peak_hours' ? 'Morning Rush' : 'Holiday Period'}
+                    placeholder={selectedType === 'peak_hours' ? 'Peak Hour 1' : 'Peak Date Range 1'}
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
                   />
                 </div>
 
-                {selectedType === 'peak_hours' && (
+                {selectedType === 'peak_dates' && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Start Time</label>
+                      <label className="block text-sm font-medium mb-1">Start Date</label>
                       <Input
-                        type="time"
-                        value={formData.startTime}
-                        onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">End Time</label>
+                      <label className="block text-sm font-medium mb-1">End Date</label>
                       <Input
-                        type="time"
-                        value={formData.endTime}
-                        onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                         required
                       />
                     </div>
                   </div>
-                )}
-
-                {selectedType === 'peak_dates' && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Start Date</label>
-                        <Input
-                          type="date"
-                          value={formData.startDate}
-                          onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">End Date</label>
-                        <Input
-                          type="date"
-                          value={formData.endDate}
-                          onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Start Time</label>
-                        <Input
-                          type="time"
-                          value={formData.startTime}
-                          onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">End Time</label>
-                        <Input
-                          type="time"
-                          value={formData.endTime}
-                          onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Charge Per Km (₹)</label>
+                    <label className="block text-sm font-medium mb-1">Start Time</label>
                     <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0"
-                      value={formData.chargePerKm}
-                      onChange={(e) => setFormData(prev => ({ ...prev, chargePerKm: e.target.value }))}
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Charge Per Minute (₹)</label>
+                    <label className="block text-sm font-medium mb-1">End Time</label>
                     <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0"
-                      value={formData.chargePerMin}
-                      onChange={(e) => setFormData(prev => ({ ...prev, chargePerMin: e.target.value }))}
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Price (₹)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    required
+                  />
                 </div>
 
                 <Button type="submit" className="w-full">Add</Button>
@@ -217,17 +195,18 @@ export const PeakHoursPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Date Range</TableHead>
               <TableHead>Time Range</TableHead>
-              <TableHead>Charge Per Km</TableHead>
-              <TableHead>Charge Per Min</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {peakHours.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                  No peak hours configured. Add your first one!
+                <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                  No peak hours/dates configured. Add your first one!
                 </TableCell>
               </TableRow>
             ) : (
@@ -235,13 +214,18 @@ export const PeakHoursPage = () => {
                 <TableRow key={hour._id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
+                      {hour.type === 'peak_hours' ? <Clock className="w-4 h-4" /> : <Calendar className="w-4 h-4" />}
                       {hour.name}
                     </div>
                   </TableCell>
+                  <TableCell>
+                    <span className="capitalize">{hour.type.replace('_', ' ')}</span>
+                  </TableCell>
+                  <TableCell>
+                    {hour.type === 'peak_dates' ? `${hour.startDate} to ${hour.endDate}` : '-'}
+                  </TableCell>
                   <TableCell>{hour.startTime} - {hour.endTime}</TableCell>
-                  <TableCell>₹{hour.chargePerKm}</TableCell>
-                  <TableCell>₹{hour.chargePerMin}</TableCell>
+                  <TableCell>₹{hour.price}</TableCell>
                   <TableCell>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -253,7 +237,7 @@ export const PeakHoursPage = () => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will delete the peak hour configuration permanently.
+                            This will delete the peak {hour.type.replace('_', ' ')} configuration permanently.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

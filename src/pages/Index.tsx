@@ -16,7 +16,6 @@ import { VehicleCategoryPage } from "@/components/admin/pages/VehicleCategoryPag
 import { PriceCategoryPage } from "@/components/admin/pages/PriceCategoryPage";
 import { RideCostPage } from "@/components/admin/pages/RideCostPage";
 import { PeakHoursPage } from "@/components/admin/pages/PeakHoursPage";
-import { PeakDatesPage } from "@/components/admin/pages/PeakDatesPage";
 import { PaymentsPage } from "@/components/admin/pages/PaymentsPage";
 import { AnalyticsPage } from "@/components/admin/pages/AnalyticsPage";
 import { SupportPage } from "@/components/admin/pages/SupportPage";
@@ -68,8 +67,6 @@ const Index = () => {
         return <RideCostPage />;
       case "peakhours":
         return <PeakHoursPage />;
-      case "peakdates":
-        return <PeakDatesPage />;
       case "payments":
         return <PaymentsPage />;
       case "analytics":

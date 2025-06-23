@@ -17,8 +17,7 @@ app.use(cors({
   origin: [
     "http://localhost:8081",
     "http://localhost:8080",
-    "https://driver-go-admin-frontend.onrender.com",
-    "https://drive-go-frontend.onrender.com"
+   "https://driver-go-admin-frontend.onrender.com/"
   ],
   credentials: true
 }));

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
@@ -28,6 +27,7 @@ interface RideCost {
   cancellationFee: number;
   insurance: number;
   extraChargesFromAdmin: number;
+  gst: number;
   discount: number;
   peakHoursChargePerKm: number;
   peakHoursChargePerMin: number;
@@ -43,6 +43,7 @@ export const RideCostPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewingRideCost, setViewingRideCost] = useState<RideCost | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -51,47 +52,74 @@ export const RideCostPage = () => {
   }, []);
 
   const fetchRideCosts = async () => {
-    const res = await axios.get(`${API_BASE_URL}/api/ride-costs`);
-    setRideCosts(res.data);
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/api/ride-costs`);
+      setRideCosts(res.data);
+    } catch (error) {
+      console.error('Error fetching ride costs:', error);
+      alert('Failed to fetch ride costs');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRideCostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    try {
+      setLoading(true);
+      const payload = Object.fromEntries(
+        Object.entries(rideCostForm).map(([key, value]) => {
+          return [
+            key,
+            key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
+          ];
+        })
+      );
 
-    const payload = Object.fromEntries(
-      Object.entries(rideCostForm).map(([key, value]) => {
-        return [
-          key,
-          key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
-        ];
-      })
-    );
+      payload['modelName'] = String(rideCostForm.modelName || '');
 
-    payload['modelName'] = String(rideCostForm.modelName || '');
-
-    await axios.post(`${API_BASE_URL}/api/ride-costs`, payload);
-    fetchRideCosts();
-    setRideCostDialogOpen(false);
-    setRideCostForm({});
+      await axios.post(`${API_BASE_URL}/api/ride-costs`, payload);
+      fetchRideCosts();
+      setRideCostDialogOpen(false);
+      setRideCostForm({});
+      alert('Ride cost model created successfully!');
+    } catch (error) {
+      console.error('Error creating ride cost:', error);
+      alert('Failed to create ride cost model');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!editingRideCost?._id) return;
-    const payload = Object.fromEntries(
-      Object.entries(rideCostForm).map(([key, value]) => [
-        key, 
-        key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
-      ])
-    );
-    payload['modelName'] = String(rideCostForm.modelName || '');
+    
+    try {
+      setLoading(true);
+      const payload = Object.fromEntries(
+        Object.entries(rideCostForm).map(([key, value]) => [
+          key, 
+          key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
+        ])
+      );
+      payload['modelName'] = String(rideCostForm.modelName || '');
 
-    await axios.put(`${API_BASE_URL}/api/ride-costs/${editingRideCost._id}`, payload);
-    fetchRideCosts();
-    setEditDialogOpen(false);
-    setEditingRideCost(null);
-    setRideCostForm({});
+      await axios.put(`${API_BASE_URL}/api/ride-costs/${editingRideCost._id}`, payload);
+      fetchRideCosts();
+      setEditDialogOpen(false);
+      setEditingRideCost(null);
+      setRideCostForm({});
+      alert('Ride cost model updated successfully!');
+    } catch (error) {
+      console.error('Error updating ride cost:', error);
+      alert('Failed to update ride cost model');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = (rideCost: RideCost) => {
@@ -106,8 +134,19 @@ export const RideCostPage = () => {
 
   const handleDelete = async (id?: string) => {
     if (!id) return;
-    await axios.delete(`${API_BASE_URL}/ride-costs/${id}`);
-    fetchRideCosts();
+    
+    try {
+      setLoading(true);
+      // Fixed: Added '/api' prefix to match other API calls
+      await axios.delete(`${API_BASE_URL}/api/ride-costs/${id}`);
+      fetchRideCosts();
+      alert('Ride cost model deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting ride cost:', error);
+      alert('Failed to delete ride cost model');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formFields = [
@@ -122,7 +161,7 @@ export const RideCostPage = () => {
     { key: 'cancellationFee', label: 'Cancellation Fee', type: 'number' },
     { key: 'insurance', label: 'Insurance', type: 'number' },
     { key: 'extraChargesFromAdmin', label: 'Extra Charges from Admin in %', type: 'number' },
-    { key: 'GST', label: 'GST in %', type: 'number' },
+    { key: 'gst', label: 'GST in %', type: 'number' }, // Fixed: Changed from 'GST' to 'gst'
     { key: 'discount', label: 'Discount', type: 'number' },
     { key: 'peakHoursChargePerKm', label: 'Peak Hours Charge Per Km', type: 'number' },
     { key: 'peakHoursChargePerMin', label: 'Peak Hours Charge Per Minute', type: 'number' },
@@ -141,7 +180,7 @@ export const RideCostPage = () => {
           <h2 className="text-xl font-semibold">Ride Cost Models</h2>
           <Dialog open={rideCostDialogOpen} onOpenChange={setRideCostDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setRideCostForm({})}>
+              <Button onClick={() => setRideCostForm({})} disabled={loading}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Ride Cost Model
               </Button>
@@ -165,12 +204,14 @@ export const RideCostPage = () => {
                             [field.key]: e.target.value
                           }))
                         }
-                       
+                        required={field.key === 'modelName'}
                       />
                     </div>
                   ))}
                 </div>
-                <Button type="submit" className="w-full">Submit</Button>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Creating...' : 'Submit'}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -196,12 +237,14 @@ export const RideCostPage = () => {
                           [field.key]: e.target.value
                         }))
                       }
-                     
+                      required={field.key === 'modelName'}
                     />
                   </div>
                 ))}
               </div>
-              <Button type="submit" className="w-full">Update</Button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Updating...' : 'Update'}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -211,37 +254,44 @@ export const RideCostPage = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Model Name</TableHead>
-               
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rideCosts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
-                    No ride cost model found. Add your first one!
+                  <TableCell colSpan={2} className="text-center py-6 text-muted-foreground">
+                    {loading ? 'Loading...' : 'No ride cost model found. Add your first one!'}
                   </TableCell>
                 </TableRow>
               ) : (
                 rideCosts.map((rideCost) => (
                   <TableRow key={rideCost._id}>
                     <TableCell>{rideCost.modelName}</TableCell>
-                  
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => {
-                          setViewingRideCost(rideCost);
-                          setViewDialogOpen(true);
-                        }}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            setViewingRideCost(rideCost);
+                            setViewDialogOpen(true);
+                          }}
+                          disabled={loading}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(rideCost)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleEdit(rideCost)}
+                          disabled={loading}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" disabled={loading}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
@@ -249,13 +299,16 @@ export const RideCostPage = () => {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This will delete the ride cost permanently.
+                                This will delete the ride cost permanently. This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(rideCost._id)}>
-                                Delete
+                              <AlertDialogAction 
+                                onClick={() => handleDelete(rideCost._id)}
+                                disabled={loading}
+                              >
+                                {loading ? 'Deleting...' : 'Delete'}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -280,7 +333,7 @@ export const RideCostPage = () => {
                 {formFields.map((field) => (
                   <div key={field.key}>
                     <label className="block text-sm font-medium mb-1">{field.label}</label>
-                    <Input value={viewingRideCost[field.key as keyof RideCost]?.toString()} readOnly />
+                    <Input value={viewingRideCost[field.key as keyof RideCost]?.toString() || ''} readOnly />
                   </div>
                 ))}
               </div>

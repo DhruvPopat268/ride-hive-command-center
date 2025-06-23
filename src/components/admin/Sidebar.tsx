@@ -14,8 +14,9 @@ import {
   FolderTree,
   Truck,
   DollarSign,
-
-  Calculator
+  Calculator,
+  Clock,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,8 @@ const menuItems = [
   { icon: Truck, label: "Vehicle Category", key: "vehiclecategory" },
   { icon: DollarSign, label: "Price Category", key: "pricecategory" },
   { icon: Calculator, label: "Ride Cost", key: "ridecost" },
+  { icon: Clock, label: "Peak Hours", key: "peakhours" },
+  { icon: Calendar, label: "Peak Dates", key: "peakdates" },
 
   // { icon: Wallet, label: "Payments", key: "payments" },
   // { icon: BarChart3, label: "Analytics", key: "analytics" },
@@ -49,7 +52,6 @@ const menuItems = [
   { icon: Bell, label: "Notifications", key: "notifications" },
   { icon: Shield, label: "Safety", key: "safety" },
   { icon: Settings, label: "Settings", key: "settings" },
-
 ];
 
 export const Sidebar = ({ isOpen, activeSection, onSectionChange }: SidebarProps) => {

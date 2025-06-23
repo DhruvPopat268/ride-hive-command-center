@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
@@ -57,16 +58,16 @@ export const RideCostPage = () => {
   const handleRideCostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-   const payload = Object.fromEntries(
-  Object.entries(rideCostForm).map(([key, value]) => {
-    return [
-      key,
-      key === 'modelName' ? value : parseFloat(value)
-    ];
-  })
-);
+    const payload = Object.fromEntries(
+      Object.entries(rideCostForm).map(([key, value]) => {
+        return [
+          key,
+          key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
+        ];
+      })
+    );
 
-    payload['modelName'] = rideCostForm.modelName;
+    payload['modelName'] = String(rideCostForm.modelName || '');
 
     await axios.post(`${API_BASE_URL}/api/ride-costs`, payload);
     fetchRideCosts();
@@ -79,10 +80,12 @@ export const RideCostPage = () => {
 
     if (!editingRideCost?._id) return;
     const payload = Object.fromEntries(
-      Object.entries(rideCostForm).map(([key, value]) => [key, parseFloat(value)])
-
+      Object.entries(rideCostForm).map(([key, value]) => [
+        key, 
+        key === 'modelName' ? String(value || '') : parseFloat(String(value || '0'))
+      ])
     );
-    payload['modelName'] = rideCostForm.modelName;
+    payload['modelName'] = String(rideCostForm.modelName || '');
 
     await axios.put(`${API_BASE_URL}/api/ride-costs/${editingRideCost._id}`, payload);
     fetchRideCosts();
@@ -135,7 +138,7 @@ export const RideCostPage = () => {
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Ride Costs</h2>
+          <h2 className="text-xl font-semibold">Ride Cost Models</h2>
           <Dialog open={rideCostDialogOpen} onOpenChange={setRideCostDialogOpen}>
             <DialogTrigger asChild>
               <Button onClick={() => setRideCostForm({})}>
@@ -263,29 +266,28 @@ export const RideCostPage = () => {
                 ))
               )}
             </TableBody>
-
           </Table>
         </ScrollArea>
-      </Card>
 
-      {/* View Dialog */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>View Ride Cost Model</DialogTitle>
-          </DialogHeader>
-          {viewingRideCost && (
-            <div className="grid grid-cols-2 gap-4">
-              {formFields.map((field) => (
-                <div key={field.key}>
-                  <label className="block text-sm font-medium mb-1">{field.label}</label>
-                  <Input value={viewingRideCost[field.key as keyof RideCost]?.toString()} readOnly />
-                </div>
-              ))}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+        {/* View Dialog */}
+        <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>View Ride Cost Model</DialogTitle>
+            </DialogHeader>
+            {viewingRideCost && (
+              <div className="grid grid-cols-2 gap-4">
+                {formFields.map((field) => (
+                  <div key={field.key}>
+                    <label className="block text-sm font-medium mb-1">{field.label}</label>
+                    <Input value={viewingRideCost[field.key as keyof RideCost]?.toString()} readOnly />
+                  </div>
+                ))}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </Card>
     </div>
   );
 };

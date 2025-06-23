@@ -14,8 +14,8 @@ import {
   FolderTree,
   Truck,
   DollarSign,
-
-  Calculator
+  Calculator,
+  Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,14 +27,12 @@ interface SidebarProps {
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", key: "dashboard" },
-  // { icon: Car, label: "Drivers", key: "drivers", count: 12 },
-  // { icon: Users, label: "Riders", key: "riders", count: 245 },
-  // { icon: MapPin, label: "Rides", key: "rides", count: 89 },
   { icon: Tags, label: "Category", key: "category" },
   { icon: FolderTree, label: "Sub Category", key: "subcategory" },
   { icon: Truck, label: "Vehicle Category", key: "vehiclecategory" },
   { icon: DollarSign, label: "Price Category", key: "pricecategory" },
   { icon: Calculator, label: "Ride Cost", key: "ridecost" },
+<<<<<<< HEAD
 
   // { icon: Wallet, label: "Payments", key: "payments" },
   // { icon: BarChart3, label: "Analytics", key: "analytics" },
@@ -50,6 +48,15 @@ const menuItems = [
   // { icon: Shield, label: "Safety", key: "safety" },
   // { icon: Settings, label: "Settings", key: "settings" },
 
+=======
+  { icon: Clock, label: "Peak Hours / Peak Dates", key: "peakhours" },
+  { icon: Wallet, label: "Payments", key: "payments" },
+  { icon: BarChart3, label: "Analytics", key: "analytics" },
+  { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },
+  { icon: Bell, label: "Notifications", key: "notifications" },
+  { icon: Shield, label: "Safety", key: "safety" },
+  { icon: Settings, label: "Settings", key: "settings" },
+>>>>>>> 0b2457b044bc93cd0c2e5390ee69e2fda2ea0f3a
 ];
 
 export const Sidebar = ({ isOpen, activeSection, onSectionChange }: SidebarProps) => {

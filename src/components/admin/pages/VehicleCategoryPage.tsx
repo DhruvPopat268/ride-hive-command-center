@@ -41,7 +41,7 @@ interface VehicleCategory {
 
 export const VehicleCategoryPage = () => {
   const [vehicleCategories, setVehicleCategories] = useState<VehicleCategory[]>([]);
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+ 
 
   const [vehicleCategoryForm, setVehicleCategoryForm] = useState({
     image: '',
@@ -57,7 +57,7 @@ export const VehicleCategoryPage = () => {
   useEffect(() => {
     const fetchVehicleCategories = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/vehiclecategories`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/vehiclecategories`);
         setVehicleCategories(res.data?.data || []);
       } catch (error) {
         console.error('Error fetching vehicle categories:', error);
@@ -65,7 +65,7 @@ export const VehicleCategoryPage = () => {
     };
 
     fetchVehicleCategories();
-  }, [API_BASE_URL]);
+  }, [import.meta.env.VITE_API_URL]);
 
   const handleVehicleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +80,7 @@ export const VehicleCategoryPage = () => {
         perKmCharge: parseFloat(vehicleCategoryForm.perKmCharge),
         perMinuteCharge: parseFloat(vehicleCategoryForm.perMinuteCharge)
       };
-      const res = await axios.post(`${API_BASE_URL}/api/vehiclecategories`, payload);
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/vehiclecategories`, payload);
       setVehicleCategories([...vehicleCategories, res.data.data]);
       setVehicleCategoryForm({ image: '', vehicleName: '', perKmCharge: '', perMinuteCharge: '' });
       setVehicleCategoryDialogOpen(false);
@@ -95,7 +95,7 @@ export const VehicleCategoryPage = () => {
       vehicleCategoryForm.perKmCharge &&
       vehicleCategoryForm.perMinuteCharge
     ) {
-      const res = await axios.put(`${API_BASE_URL}/api/vehiclecategories/${editingVehicleCategory._id}`, {
+      const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/vehiclecategories/${editingVehicleCategory._id}`, {
         image: vehicleCategoryForm.image,
         vehicleName: vehicleCategoryForm.vehicleName,
         perKmCharge: parseFloat(vehicleCategoryForm.perKmCharge),
@@ -122,7 +122,7 @@ export const VehicleCategoryPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    await axios.delete(`${API_BASE_URL}/api/vehiclecategories/${id}`);
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/vehiclecategories/${id}`);
     setVehicleCategories(vehicleCategories.filter(vc => vc._id !== id));
   };
 

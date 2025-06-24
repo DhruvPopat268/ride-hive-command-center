@@ -45,7 +45,7 @@ export const RideCostPage = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL 
+  
 
   useEffect(() => {
     fetchRideCosts();
@@ -54,7 +54,7 @@ export const RideCostPage = () => {
   const fetchRideCosts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/api/ride-costs`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/ride-costs`);
       setRideCosts(res.data);
     } catch (error) {
       console.error('Error fetching ride costs:', error);
@@ -80,7 +80,7 @@ export const RideCostPage = () => {
 
       payload['modelName'] = String(rideCostForm.modelName || '');
 
-      await axios.post(`${API_BASE_URL}/api/ride-costs`, payload);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/ride-costs`, payload);
       fetchRideCosts();
       setRideCostDialogOpen(false);
       setRideCostForm({});
@@ -108,7 +108,7 @@ export const RideCostPage = () => {
       );
       payload['modelName'] = String(rideCostForm.modelName || '');
 
-      await axios.put(`${API_BASE_URL}/api/ride-costs/${editingRideCost._id}`, payload);
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/ride-costs/${editingRideCost._id}`, payload);
       fetchRideCosts();
       setEditDialogOpen(false);
       setEditingRideCost(null);
@@ -138,7 +138,7 @@ export const RideCostPage = () => {
     try {
       setLoading(true);
       // Fixed: Added '/api' prefix to match other API calls
-      await axios.delete(`${API_BASE_URL}/api/ride-costs/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/ride-costs/${id}`);
       fetchRideCosts();
       alert('Ride cost model deleted successfully!');
     } catch (error) {

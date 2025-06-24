@@ -34,12 +34,12 @@ export const SubCategoryPage = () => {
   const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+ 
 
   useEffect(() => {
 const fetchCategories = async () => {
   try {
-    const cateData = await axios.get(`${API_BASE_URL}/api/categories`);
+    const cateData = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
 
     console.log(cateData.data?.data)
     
@@ -56,7 +56,7 @@ const fetchCategories = async () => {
 };
 
   const fetchSubCategories = async () => {
-    const subcateData = await axios.get(`${API_BASE_URL}/api/subcategories`);
+    const subcateData = await axios.get(`${import.meta.env.VITE_API_URL}/api/subcategories`);
 
     if (Array.isArray(subcateData.data)) {
       setSubCategories(subcateData.data);
@@ -77,7 +77,7 @@ const fetchCategories = async () => {
 
   if (subCategoryForm.categoryId && subCategoryForm.name.trim()) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/subcategories`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/subcategories`, {
         categoryId: subCategoryForm.categoryId,
         name: subCategoryForm.name.trim(),
       });
@@ -135,7 +135,7 @@ const fetchCategories = async () => {
 
  const handleDelete = async (id: number | string) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/api/subcategories/${id}`);
+    const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/subcategories/${id}`);
     
     if (response.status === 200) {
       // Remove from UI

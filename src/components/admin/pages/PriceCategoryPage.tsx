@@ -31,7 +31,7 @@ export const PriceCategoryPage = () => {
   const [editingCategory, setEditingCategory] = useState<PriceCategory | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  
 
   useEffect(() => {
     fetchCategories();
@@ -39,7 +39,7 @@ export const PriceCategoryPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/price-categories`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/price-categories`);
       setPriceCategories(res.data);
     } catch (err) {
       console.error('Failed to fetch price categories', err);
@@ -56,9 +56,9 @@ export const PriceCategoryPage = () => {
 
     try {
       if (editingCategory) {
-        await axios.put(`${API_BASE_URL}/api/price-categories/${editingCategory._id}`, payload);
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/price-categories/${editingCategory._id}`, payload);
       } else {
-        await axios.post(`${API_BASE_URL}/api/price-categories`, payload);
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/price-categories`, payload);
       }
       await fetchCategories();
       setDialogOpen(false);
@@ -81,7 +81,7 @@ export const PriceCategoryPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`${API_BASE_URL}/api/price-categories/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/price-categories/${id}`);
       fetchCategories();
     } catch (err) {
       console.error('Failed to delete category', err);

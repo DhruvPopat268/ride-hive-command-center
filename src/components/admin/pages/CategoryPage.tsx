@@ -1,400 +1,310 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Loader } from 'lucide-react';
+import { Package, Car, Truck, Plane, Ship, MapPin, Clock, Star, ArrowRight, Check, Phone, Mail, Calendar, Loader, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import axios from 'axios';
 
-interface Category {
-  _id: string;
-  id?: string; // Optional for compatibility
-  name: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface ApiResponse {
-  success: boolean;
-  message?: string;
-  data?: Category | Category[];
-  count?: number;
-  errors?: string[];
-}
-
-export const CategoryPage = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryForm, setCategoryForm] = useState({ name: '' });
-  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+const ServiceSelectionPage = () => {
+  const [services, setServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
 
-  // Fetch categories on component mount
+  // Fetch services from API
   useEffect(() => {
-    fetchCategories();
+    fetchServices();
   }, []);
 
-  const fetchCategories = async () => {
+  const fetchServices = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
-      const categoriesData = response.data.data || [];
-      // Ensure categoriesData is an array and filter out any null/undefined entries
-      const validCategories: Category[] = Array.isArray(categoriesData)
-        ? categoriesData.filter((item: any): item is Category =>
-            item !== null && typeof item === 'object' && (item._id || item.id) && typeof item.name === 'string'
-          ).map(item => ({
-              _id: item._id || item.id, // Ensure _id is always present
-              name: item.name,
-              createdAt: item.createdAt,
-              updatedAt: item.updatedAt
-          }))
-        : [];
-      setCategories(validCategories);
+      // Replace with your API endpoint
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/services`);
+      const result = await response.json();
+      setServices(result.data || []);
     } catch (err) {
-      setError('Network error. Please check your connection.');
-      console.error('Fetch categories error:', err);
-      setCategories([]);
+      setError('Failed to load services. Please try again.');
+      console.error('Fetch services error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCategorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!categoryForm.name.trim()) return;
+  const handleServiceSelect = (service) => {
+    setSelectedService(service);
+    setSelectedPlan(null);
+  };
 
+  const handlePlanSelect = (plan) => {
+    setSelectedPlan(plan);
+  };
+
+  const handleBookService = async () => {
+    if (!selectedService || !selectedPlan) return;
+    
     try {
-      setActionLoading({ create: true });
-      setError(null);
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
+      setLoading(true);
+      // Replace with your booking API endpoint
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bookings`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: categoryForm.name.trim() }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: selectedService.id,
+          planId: selectedPlan.id,
+          // Add other booking details
+        })
       });
-
-      const result: ApiResponse = await response.json();
-
-      if (result.success && result.data) {
-        // Add the new category to the list
-        const newCategory = result.data as Category;
-        if (newCategory._id || newCategory.id) {
-            setCategories([{ ...newCategory, _id: newCategory._id || newCategory.id! }, ...categories]);
-            setCategoryForm({ name: '' });
-            setCategoryDialogOpen(false);
-            setSuccess('Category created successfully!');
-            setTimeout(() => setSuccess(null), 3000);
-        } else {
-            setError('Created category is missing an ID.');
-        }
-      } else {
-        setError(result.message || 'Failed to create category');
-      }
+      // Handle booking response
     } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('Create category error:', err);
+      setError('Booking failed. Please try again.');
     } finally {
-      setActionLoading({});
-    }
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCategory || !categoryForm.name.trim()) return;
-
-    const categoryId = editingCategory._id || editingCategory.id;
-    if (!categoryId) {
-        setError('Editing category is missing an ID.');
-        return;
-    }
-
-    try {
-      setActionLoading({ [`edit-${categoryId}`]: true });
-      setError(null);
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${categoryId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: categoryForm.name.trim() }),
-      });
-
-      const result: ApiResponse = await response.json();
-
-      if (result.success && result.data) {
-        // Update the category in the list
-        setCategories(categories.map(cat => {
-            const currentCatId = cat._id || cat.id;
-            return currentCatId === categoryId ? { ...result.data as Category, _id: categoryId } : cat;
-        }));
-        setCategoryForm({ name: '' });
-        setEditDialogOpen(false);
-        setEditingCategory(null);
-        setSuccess('Category updated successfully!');
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(result.message || 'Failed to update category');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('Update category error:', err);
-    } finally {
-      setActionLoading({});
-    }
-  };
-
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setCategoryForm({ name: category.name });
-    setEditDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      setActionLoading({ [`delete-${id}`]: true });
-      setError(null);
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${id}`, {
-        method: 'DELETE',
-      });
-
-      const result: ApiResponse = await response.json();
-
-      if (result.success) {
-        // Remove the category from the list
-        setCategories(categories.filter(cat => (cat._id || cat.id) !== id));
-        setSuccess('Category deleted successfully!');
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(result.message || 'Failed to delete category');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-      console.error('Delete category error:', err);
-    } finally {
-      setActionLoading({});
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Category Management</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Choose Your Service</h1>
+              <p className="mt-2 text-gray-600">Select the service that best fits your needs</p>
+            </div>
+            <div className="mt-4 sm:mt-0 flex items-center space-x-4">
+              <Badge variant="outline" className="px-3 py-1">
+                <Clock className="w-4 h-4 mr-1" />
+                24/7 Support
+              </Badge>
+              <Badge variant="outline" className="px-3 py-1">
+                <Star className="w-4 h-4 mr-1" />
+                Trusted Service
+              </Badge>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Success/Error Messages */}
-      {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-800">{success}</AlertDescription>
-        </Alert>
-      )}
-      
-      {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-800">{error}</AlertDescription>
-        </Alert>
-      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Alert */}
+        {error && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">{error}</AlertDescription>
+          </Alert>
+        )}
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Categories ({categories.length})</h2>
-          <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button disabled={loading || actionLoading.create}>
-                {actionLoading.create ? (
-                  <>
-                    <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Category
-                  </>
-                )}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Category</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCategorySubmit} className="space-y-4">
-                <Input
-                  placeholder="Enter category name"
-                  value={categoryForm.name}
-                  onChange={(e) => setCategoryForm({ name: e.target.value })}
-                  required
-                  disabled={actionLoading.create}
-                />
-                <Button type="submit" className="w-full" disabled={actionLoading.create}>
-                  {actionLoading.create ? (
-                    <>
-                      <Loader className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    'Submit'
-                  )}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+        {/* Search and Filter */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search services..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Categories</option>
+              {/* Categories will be populated from API */}
+            </select>
+          </div>
         </div>
 
-        {/* Edit Dialog */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Category</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <Input
-                placeholder="Enter category name"
-                value={categoryForm.name}
-                onChange={(e) => setCategoryForm({ name: e.target.value })}
-                required
-                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id || editingCategory.id}`] : false}
-              />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id || editingCategory.id}`] : false}
-              >
-                {editingCategory && actionLoading[`edit-${editingCategory._id || editingCategory.id}`] ? (
-                  <>
-                    <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  'Update'
-                )}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {loading && categories.length === 0 ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader className="w-6 h-6 animate-spin mr-2" />
-            <span>Loading categories...</span>
+        {loading && services.length === 0 ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader className="w-8 h-8 animate-spin mr-3" />
+            <span className="text-lg">Loading services...</span>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Index</TableHead>{/* Changed from ID to Index */}
-                <TableHead>Category Name</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categories.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                    No categories found. Create your first category!
-                  </TableCell>
-                </TableRow>
-              ) : (
-                categories.map((category, index) => { // Added 'index' parameter to map
-                  const categoryId = category._id || category.id;
-                  // Ensure category and its ID are valid before rendering
-                  if (!category || !categoryId) {
-                    console.warn("Skipping invalid category entry:", category);
-                    return null; // Skip this iteration
-                  }
-
-                  return (
-                    <TableRow key={categoryId}> {/* Still using categoryId for unique key */}
-                      <TableCell className="font-mono text-sm">
-                        {index + 1} {/* Displaying index starting from 1 */}
-                      </TableCell>
-                      <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell>
-                        {category.createdAt
-                          ? new Date(category.createdAt).toLocaleDateString()
-                          : 'N/A'
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(category)}
-                            disabled={actionLoading[`edit-${categoryId}`] || actionLoading[`delete-${categoryId}`]}
-                          >
-                            {actionLoading[`edit-${categoryId}`] ? (
-                              <Loader className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Edit className="w-4 h-4" />
-                            )}
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={actionLoading[`edit-${categoryId}`] || actionLoading[`delete-${categoryId}`]}
-                              >
-                                {actionLoading[`delete-${categoryId}`] ? (
-                                  <Loader className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="w-4 h-4" />
-                                )}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the category "{category.name}".
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel disabled={actionLoading[`delete-${categoryId}`]}>
-                                  Cancel
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(categoryId)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                  disabled={actionLoading[`delete-${categoryId}`]}
-                                >
-                                  {actionLoading[`delete-${categoryId}`] ? (
-                                    <>
-                                      <Loader className="w-4 h-4 mr-2 animate-spin" />
-                                      Deleting...
-                                    </>
-                                  ) : (
-                                    'Delete'
-                                  )}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Services List */}
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {services.length === 0 ? (
+                  <div className="col-span-full text-center py-12">
+                    <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Services Available</h3>
+                    <p className="text-gray-500">Services will appear here once loaded from your API.</p>
+                  </div>
+                ) : (
+                  services.map((service) => (
+                    <Card 
+                      key={service.id}
+                      className={`p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
+                        selectedService?.id === service.id 
+                          ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => handleServiceSelect(service)}
+                    >
+                      <div className="flex items-start space-x-4">
+                        <div className={`p-3 rounded-full ${service.lightColor || 'bg-gray-100'}`}>
+                          {/* Icon will be dynamically set based on service type */}
+                          <Package className={`w-6 h-6 ${service.color || 'text-gray-600'}`} />
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {service.name}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-3">
+                            {service.description}
+                          </p>
+                          <div className="space-y-1">
+                            {service.features?.map((feature, index) => (
+                              <div key={index} className="flex items-center text-sm text-gray-500">
+                                <Check className="w-3 h-3 text-green-500 mr-2" />
+                                {feature}
+                              </div>
+                            ))}
+                          </div>
+                          {service.rating && (
+                            <div className="flex items-center mt-3">
+                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                              <span className="text-sm font-medium ml-1">{service.rating}</span>
+                              <span className="text-sm text-gray-500 ml-1">({service.reviewCount} reviews)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Service Details & Pricing */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-8">
+                {selectedService ? (
+                  <Card className="p-6">
+                    <h3 className="text-xl font-semibold mb-4">
+                      {selectedService.name} Plans
+                    </h3>
+                    <div className="space-y-4">
+                      {selectedService.plans?.length === 0 ? (
+                        <p className="text-gray-500">No pricing plans available</p>
+                      ) : (
+                        selectedService.plans?.map((plan) => (
+                          <div
+                            key={plan.id}
+                            className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                              selectedPlan?.id === plan.id
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => handlePlanSelect(plan)}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold">{plan.name}</h4>
+                              {plan.popular && (
+                                <Badge className="bg-blue-100 text-blue-800">Popular</Badge>
+                              )}
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900 mb-1">
+                              {plan.price}
+                            </p>
+                            <p className="text-sm text-gray-600 mb-3">{plan.duration}</p>
+                            <ul className="space-y-1">
+                              {plan.features?.map((feature, index) => (
+                                <li key={index} className="flex items-center text-sm">
+                                  <Check className="w-3 h-3 text-green-500 mr-2" />
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {selectedPlan && (
+                      <div className="mt-6 space-y-4">
+                        <Button 
+                          onClick={handleBookService}
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          disabled={loading}
+                        >
+                          {loading ? (
+                            <>
+                              <Loader className="w-4 h-4 mr-2 animate-spin" />
+                              Booking...
+                            </>
+                          ) : (
+                            <>
+                              Book Now
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          )}
+                        </Button>
+                        
+                        <div className="text-center text-sm text-gray-500">
+                          <div className="flex items-center justify-center space-x-4">
+                            <div className="flex items-center">
+                              <Phone className="w-4 h-4 mr-1" />
+                              Support
+                            </div>
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              Flexible
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                ) : (
+                  <Card className="p-6 text-center">
+                    <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Select a Service
+                    </h3>
+                    <p className="text-gray-500">
+                      Choose a service from the left to see pricing plans and details.
+                    </p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </div>
         )}
-      </Card>
+
+        {/* Footer Info */}
+        <div className="mt-12 bg-white rounded-lg shadow-sm p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div>
+              <MapPin className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+              <h4 className="font-semibold mb-1">Wide Coverage</h4>
+              <p className="text-sm text-gray-600">Available in multiple locations</p>
+            </div>
+            <div>
+              <Clock className="w-8 h-8 text-green-500 mx-auto mb-2" />
+              <h4 className="font-semibold mb-1">24/7 Service</h4>
+              <p className="text-sm text-gray-600">Round the clock support</p>
+            </div>
+            <div>
+              <Star className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+              <h4 className="font-semibold mb-1">Trusted Platform</h4>
+              <p className="text-sm text-gray-600">Thousands of satisfied customers</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
+export default ServiceSelectionPage;

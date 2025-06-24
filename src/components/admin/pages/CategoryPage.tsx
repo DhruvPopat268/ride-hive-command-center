@@ -48,7 +48,18 @@ export const CategoryPage = () => {
 
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
       const categoriesData = response.data.data || [];
-      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      // Ensure categoriesData is an array and filter out any null/undefined entries
+      const validCategories: Category[] = Array.isArray(categoriesData)
+        ? categoriesData.filter((item: any): item is Category =>
+            item !== null && typeof item === 'object' && (item._id || item.id) && typeof item.name === 'string'
+          ).map(item => ({
+              _id: item._id || item.id, // Ensure _id is always present
+              name: item.name,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt
+          }))
+        : [];
+      setCategories(validCategories);
     } catch (err) {
       setError('Network error. Please check your connection.');
       console.error('Fetch categories error:', err);
@@ -65,7 +76,7 @@ export const CategoryPage = () => {
     try {
       setActionLoading({ create: true });
       setError(null);
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
         method: 'POST',
         headers: {
@@ -75,14 +86,19 @@ export const CategoryPage = () => {
       });
 
       const result: ApiResponse = await response.json();
-      
+
       if (result.success && result.data) {
         // Add the new category to the list
-        setCategories([result.data as Category, ...categories]);
-        setCategoryForm({ name: '' });
-        setCategoryDialogOpen(false);
-        setSuccess('Category created successfully!');
-        setTimeout(() => setSuccess(null), 3000);
+        const newCategory = result.data as Category;
+        if (newCategory._id || newCategory.id) {
+            setCategories([{ ...newCategory, _id: newCategory._id || newCategory.id! }, ...categories]);
+            setCategoryForm({ name: '' });
+            setCategoryDialogOpen(false);
+            setSuccess('Category created successfully!');
+            setTimeout(() => setSuccess(null), 3000);
+        } else {
+            setError('Created category is missing an ID.');
+        }
       } else {
         setError(result.message || 'Failed to create category');
       }
@@ -99,12 +115,15 @@ export const CategoryPage = () => {
     if (!editingCategory || !categoryForm.name.trim()) return;
 
     const categoryId = editingCategory._id || editingCategory.id;
-    if (!categoryId) return;
+    if (!categoryId) {
+        setError('Editing category is missing an ID.');
+        return;
+    }
 
     try {
       setActionLoading({ [`edit-${categoryId}`]: true });
       setError(null);
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${categoryId}`, {
         method: 'PUT',
         headers: {
@@ -114,12 +133,13 @@ export const CategoryPage = () => {
       });
 
       const result: ApiResponse = await response.json();
-      
+
       if (result.success && result.data) {
         // Update the category in the list
-        setCategories(categories.map(cat => 
-          (cat._id || cat.id) === categoryId ? result.data as Category : cat
-        ));
+        setCategories(categories.map(cat => {
+            const currentCatId = cat._id || cat.id;
+            return currentCatId === categoryId ? { ...result.data as Category, _id: categoryId } : cat;
+        }));
         setCategoryForm({ name: '' });
         setEditDialogOpen(false);
         setEditingCategory(null);
@@ -146,13 +166,13 @@ export const CategoryPage = () => {
     try {
       setActionLoading({ [`delete-${id}`]: true });
       setError(null);
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${id}`, {
         method: 'DELETE',
       });
 
       const result: ApiResponse = await response.json();
-      
+
       if (result.success) {
         // Remove the category from the list
         setCategories(categories.filter(cat => (cat._id || cat.id) !== id));
@@ -246,14 +266,14 @@ export const CategoryPage = () => {
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm({ name: e.target.value })}
                 required
-                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id}`] : false}
+                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id || editingCategory.id}`] : false}
               />
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id}`] : false}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id || editingCategory.id}`] : false}
               >
-                {editingCategory && actionLoading[`edit-${editingCategory._id}`] ? (
+                {editingCategory && actionLoading[`edit-${editingCategory._id || editingCategory.id}`] ? (
                   <>
                     <Loader className="w-4 h-4 mr-2 animate-spin" />
                     Updating...
@@ -275,7 +295,7 @@ export const CategoryPage = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
+                <TableHead>Index</TableHead>{/* Changed from ID to Index */}
                 <TableHead>Category Name</TableHead>
                 <TableHead>Created At</TableHead>
                 <TableHead>Actions</TableHead>
@@ -289,25 +309,31 @@ export const CategoryPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                categories.map((category) => {
-                  const categoryId = category._id || category.id || '';
+                categories.map((category, index) => { // Added 'index' parameter to map
+                  const categoryId = category._id || category.id;
+                  // Ensure category and its ID are valid before rendering
+                  if (!category || !categoryId) {
+                    console.warn("Skipping invalid category entry:", category);
+                    return null; // Skip this iteration
+                  }
+
                   return (
-                    <TableRow key={category._id || category.id}>
+                    <TableRow key={categoryId}> {/* Still using categoryId for unique key */}
                       <TableCell className="font-mono text-sm">
-                        {categoryId ? `${categoryId.slice(-8)}...` : 'N/A'}
+                        {index + 1} {/* Displaying index starting from 1 */}
                       </TableCell>
                       <TableCell className="font-medium">{category.name}</TableCell>
                       <TableCell>
-                        {category.createdAt 
+                        {category.createdAt
                           ? new Date(category.createdAt).toLocaleDateString()
                           : 'N/A'
                         }
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleEdit(category)}
                             disabled={actionLoading[`edit-${categoryId}`] || actionLoading[`delete-${categoryId}`]}
                           >
@@ -319,9 +345,9 @@ export const CategoryPage = () => {
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 disabled={actionLoading[`edit-${categoryId}`] || actionLoading[`delete-${categoryId}`]}
                               >
                                 {actionLoading[`delete-${categoryId}`] ? (
@@ -342,7 +368,7 @@ export const CategoryPage = () => {
                                 <AlertDialogCancel disabled={actionLoading[`delete-${categoryId}`]}>
                                   Cancel
                                 </AlertDialogCancel>
-                                <AlertDialogAction 
+                                <AlertDialogAction
                                   onClick={() => handleDelete(categoryId)}
                                   className="bg-red-600 hover:bg-red-700"
                                   disabled={actionLoading[`delete-${categoryId}`]}

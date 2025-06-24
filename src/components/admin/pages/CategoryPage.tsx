@@ -10,7 +10,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import axios from 'axios';
 
 interface Category {
-  id: string;
+  _id: string;
+  id?: string; // Optional for compatibility
   name: string;
   createdAt?: string;
   updatedAt?: string;
@@ -31,6 +32,7 @@ export const CategoryPage = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -39,36 +41,29 @@ export const CategoryPage = () => {
     fetchCategories();
   }, []);
 
-const fetchCategories = async () => {
-  
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  try {
-    setLoading(true);
-    setError(null);
-
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
-    const result: ApiResponse = response.data;
-
-    if (result.success && Array.isArray(result.data)) {
-      setCategories(result.data);
-    } else {
-      setError(result.message || 'Failed to fetch categories');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
+      const categoriesData = response.data.data || [];
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+    } catch (err) {
+      setError('Network error. Please check your connection.');
+      console.error('Fetch categories error:', err);
+      setCategories([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError('Network error. Please check your connection.');
-    console.error('Fetch categories error:', err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryForm.name.trim()) return;
 
     try {
-      setLoading(true);
+      setActionLoading({ create: true });
       setError(null);
       
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
@@ -82,6 +77,7 @@ const fetchCategories = async () => {
       const result: ApiResponse = await response.json();
       
       if (result.success && result.data) {
+        // Add the new category to the list
         setCategories([result.data as Category, ...categories]);
         setCategoryForm({ name: '' });
         setCategoryDialogOpen(false);
@@ -94,7 +90,7 @@ const fetchCategories = async () => {
       setError('Network error. Please try again.');
       console.error('Create category error:', err);
     } finally {
-      setLoading(false);
+      setActionLoading({});
     }
   };
 
@@ -102,11 +98,14 @@ const fetchCategories = async () => {
     e.preventDefault();
     if (!editingCategory || !categoryForm.name.trim()) return;
 
+    const categoryId = editingCategory._id || editingCategory.id;
+    if (!categoryId) return;
+
     try {
-      setLoading(true);
+      setActionLoading({ [`edit-${categoryId}`]: true });
       setError(null);
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${editingCategory.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${categoryId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,8 +116,9 @@ const fetchCategories = async () => {
       const result: ApiResponse = await response.json();
       
       if (result.success && result.data) {
+        // Update the category in the list
         setCategories(categories.map(cat => 
-          cat.id === editingCategory.id ? result.data as Category : cat
+          (cat._id || cat.id) === categoryId ? result.data as Category : cat
         ));
         setCategoryForm({ name: '' });
         setEditDialogOpen(false);
@@ -132,7 +132,7 @@ const fetchCategories = async () => {
       setError('Network error. Please try again.');
       console.error('Update category error:', err);
     } finally {
-      setLoading(false);
+      setActionLoading({});
     }
   };
 
@@ -144,7 +144,7 @@ const fetchCategories = async () => {
 
   const handleDelete = async (id: string) => {
     try {
-      setLoading(true);
+      setActionLoading({ [`delete-${id}`]: true });
       setError(null);
       
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${id}`, {
@@ -154,7 +154,8 @@ const fetchCategories = async () => {
       const result: ApiResponse = await response.json();
       
       if (result.success) {
-        setCategories(categories.filter(cat => cat.id !== id));
+        // Remove the category from the list
+        setCategories(categories.filter(cat => (cat._id || cat.id) !== id));
         setSuccess('Category deleted successfully!');
         setTimeout(() => setSuccess(null), 3000);
       } else {
@@ -164,7 +165,7 @@ const fetchCategories = async () => {
       setError('Network error. Please try again.');
       console.error('Delete category error:', err);
     } finally {
-      setLoading(false);
+      setActionLoading({});
     }
   };
 
@@ -192,9 +193,18 @@ const fetchCategories = async () => {
           <h2 className="text-xl font-semibold">Categories ({categories.length})</h2>
           <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={loading}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Category
+              <Button disabled={loading || actionLoading.create}>
+                {actionLoading.create ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Category
+                  </>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -207,10 +217,10 @@ const fetchCategories = async () => {
                   value={categoryForm.name}
                   onChange={(e) => setCategoryForm({ name: e.target.value })}
                   required
-                  disabled={loading}
+                  disabled={actionLoading.create}
                 />
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
+                <Button type="submit" className="w-full" disabled={actionLoading.create}>
+                  {actionLoading.create ? (
                     <>
                       <Loader className="w-4 h-4 mr-2 animate-spin" />
                       Creating...
@@ -236,10 +246,14 @@ const fetchCategories = async () => {
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm({ name: e.target.value })}
                 required
-                disabled={loading}
+                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id}`] : false}
               />
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={editingCategory ? actionLoading[`edit-${editingCategory._id}`] : false}
+              >
+                {editingCategory && actionLoading[`edit-${editingCategory._id}`] ? (
                   <>
                     <Loader className="w-4 h-4 mr-2 animate-spin" />
                     Updating...
@@ -275,56 +289,81 @@ const fetchCategories = async () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell className="font-mono text-sm">
-                      {category.id.slice(-8)}...
-                    </TableCell>
-                    <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell>
-                      {category.createdAt 
-                        ? new Date(category.createdAt).toLocaleDateString()
-                        : 'N/A'
-                      }
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleEdit(category)}
-                          disabled={loading}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm" disabled={loading}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the category "{category.name}".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleDelete(category.id)}
-                                className="bg-red-600 hover:bg-red-700"
+                categories.map((category) => {
+                  const categoryId = category._id || category.id || '';
+                  return (
+                    <TableRow key={category._id || category.id}>
+                      <TableCell className="font-mono text-sm">
+                        {categoryId ? `${categoryId.slice(-8)}...` : 'N/A'}
+                      </TableCell>
+                      <TableCell className="font-medium">{category.name}</TableCell>
+                      <TableCell>
+                        {category.createdAt 
+                          ? new Date(category.createdAt).toLocaleDateString()
+                          : 'N/A'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleEdit(category)}
+                            disabled={actionLoading[`edit-${categoryId}`] || actionLoading[`delete-${categoryId}`]}
+                          >
+                            {actionLoading[`edit-${categoryId}`] ? (
+                              <Loader className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Edit className="w-4 h-4" />
+                            )}
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                disabled={actionLoading[`edit-${categoryId}`] || actionLoading[`delete-${categoryId}`]}
                               >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                                {actionLoading[`delete-${categoryId}`] ? (
+                                  <Loader className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete the category "{category.name}".
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel disabled={actionLoading[`delete-${categoryId}`]}>
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDelete(categoryId)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                  disabled={actionLoading[`delete-${categoryId}`]}
+                                >
+                                  {actionLoading[`delete-${categoryId}`] ? (
+                                    <>
+                                      <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                      Deleting...
+                                    </>
+                                  ) : (
+                                    'Delete'
+                                  )}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

@@ -39,9 +39,6 @@ export const CategoryPage = () => {
     fetchCategories();
   }, []);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-
 const fetchCategories = async () => {
   
 
@@ -49,7 +46,7 @@ const fetchCategories = async () => {
     setLoading(true);
     setError(null);
 
-    const response = await axios.get(`${API_BASE_URL}/api/categories`);
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
     const result: ApiResponse = response.data;
 
     if (result.success && Array.isArray(result.data)) {
@@ -74,7 +71,7 @@ const fetchCategories = async () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +106,7 @@ const fetchCategories = async () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/categories/${editingCategory.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${editingCategory.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +147,7 @@ const fetchCategories = async () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/categories/${id}`, {
         method: 'DELETE',
       });
 

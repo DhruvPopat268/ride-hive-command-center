@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Plus, Trash2, Clock, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,39 +40,64 @@ export const PeakHoursPage = () => {
     price: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const newPeakHour: PeakHour = {
-      _id: Date.now().toString(),
-      name: formData.name,
-      type: selectedType,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      startDate: selectedType === 'peak_dates' ? formData.startDate : undefined,
-      endDate: selectedType === 'peak_dates' ? formData.endDate : undefined,
-      price: parseFloat(formData.price)
-    };
-    
-    setPeakHours([...peakHours, newPeakHour]);
-    setDialogOpen(false);
-    setFormData({
-      name: '',
-      startTime: '',
-      endTime: '',
-      startDate: '',
-      endDate: '',
-      price: ''
-    });
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/peaks`;
+
+  const fetchPeakHours = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      if (res.data.success) {
+        setPeakHours(res.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching peak hours:', err);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setPeakHours(peakHours.filter(hour => hour._id !== id));
+  useEffect(() => {
+    fetchPeakHours();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: formData.name,
+        type: selectedType,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        startDate: selectedType === 'peak_dates' ? formData.startDate : undefined,
+        endDate: selectedType === 'peak_dates' ? formData.endDate : undefined,
+        price: parseFloat(formData.price)
+      };
+      const res = await axios.post(API_URL, payload);
+      if (res.data.success) {
+        setPeakHours(prev => [res.data.data, ...prev]);
+        setDialogOpen(false);
+        setFormData({
+          name: '',
+          startTime: '',
+          endTime: '',
+          startDate: '',
+          endDate: '',
+          price: ''
+        });
+      }
+    } catch (err) {
+      console.error('Error creating peak hour:', err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      setPeakHours(prev => prev.filter(hour => hour._id !== id));
+    } catch (err) {
+      console.error('Error deleting peak hour:', err);
+    }
   };
 
   const handleTypeChange = (value: 'peak_hours' | 'peak_dates') => {
     setSelectedType(value);
-    // Reset form data when type changes
     setFormData({
       name: '',
       startTime: '',

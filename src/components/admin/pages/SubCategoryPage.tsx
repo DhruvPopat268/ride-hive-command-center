@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import axios from 'axios'
 
 interface Category {
-  id: number;
+  _id: number;
   name: string;
 }
 
@@ -84,7 +84,7 @@ const fetchCategories = async () => {
 
       // Optionally update local state if needed
       const selectedCategory = categories.find(
-        (cat) => cat.id.toString() === subCategoryForm.categoryId
+        (cat) => cat._id.toString() === subCategoryForm.categoryId
       );
 
       const newSubCategory = {
@@ -107,7 +107,7 @@ const fetchCategories = async () => {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingSubCategory && subCategoryForm.categoryId && subCategoryForm.name.trim()) {
-      const selectedCategory = categories.find(cat => cat.id.toString() === subCategoryForm.categoryId);
+      const selectedCategory = categories.find(cat => cat._id.toString() === subCategoryForm.categoryId);
       setSubCategories(subCategories.map(subCat =>
         subCat.id === editingSubCategory.id
           ? {
@@ -175,7 +175,7 @@ const fetchCategories = async () => {
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
+                      <SelectItem key={category._id} value={category._id.toString()}>
                         {category.name}
                       </SelectItem>
                     ))}
@@ -206,7 +206,7 @@ const fetchCategories = async () => {
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
+                    <SelectItem key={category._id} value={category._id.toString()}>
                       {category.name}
                     </SelectItem>
                   ))}

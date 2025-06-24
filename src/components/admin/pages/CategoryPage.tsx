@@ -41,7 +41,7 @@ export const CategoryPage = () => {
 
 const fetchCategories = async () => {
   
-
+console.log(import.meta.env.VITE_API_URL)
   try {
     setLoading(true);
     setError(null);

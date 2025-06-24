@@ -1,4 +1,3 @@
-// models/Category.js
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema({
@@ -11,25 +10,7 @@ const categorySchema = new mongoose.Schema({
     maxlength: [50, 'Category name cannot exceed 50 characters']
   }
 }, {
-  timestamps: true // This will add createdAt and updatedAt fields
-});
-
-// Index for faster queries
-categorySchema.index({ name: 1 });
-
-// Virtual to transform _id to id for frontend consistency
-categorySchema.virtual('id').get(function() {
-  return this._id.toHexString();
-});
-
-// Ensure virtual fields are serialized
-categorySchema.set('toJSON', {
-  virtuals: true,
-  transform: function(doc, ret) {
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  }
+  timestamps: true // Adds createdAt and updatedAt fields automatically
 });
 
 const Category = mongoose.model('Category', categorySchema);

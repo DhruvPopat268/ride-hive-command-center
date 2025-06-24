@@ -9,7 +9,6 @@ const priceCategoryRoutes = require('./routes/priceCategoryRoutes');
 const rideCostRoutes = require('./routes/rideCostRoutes');
 const connectToDb = require('./database/db');
 
-
 const app = express();
 
 // Middleware

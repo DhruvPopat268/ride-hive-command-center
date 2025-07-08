@@ -114,6 +114,11 @@ export const PeakHoursPage = () => {
         <h1 className="text-3xl font-bold">Peak Hours / Peak Dates Management</h1>
       </div>
 
+      <div className="flex items-center justify-between">
+        <p className='text-red-400'>**add time ranges in 24 Hours Format</p>
+
+      </div>
+
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Peak Hours / Peak Dates</h2>

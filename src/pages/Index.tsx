@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { Header } from "@/components/admin/Header";
@@ -22,6 +21,7 @@ import { SupportPage } from "@/components/admin/pages/SupportPage";
 import { NotificationsPage } from "@/components/admin/pages/NotificationsPage";
 import { SafetyPage } from "@/components/admin/pages/SafetyPage";
 import { SettingsPage } from "@/components/admin/pages/SettingsPage";
+import { InstructionsPage } from "@/components/admin/pages/InstructionsPage";
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -79,6 +79,8 @@ const Index = () => {
         return <SafetyPage />;
       case "settings":
         return <SettingsPage />;
+      case "instructions":
+        return <InstructionsPage />;
       default:
         return <div className="text-white dark:text-white text-gray-900">Page not found</div>;
     }

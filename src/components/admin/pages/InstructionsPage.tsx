@@ -47,7 +47,7 @@ export const InstructionsPage = () => {
   const { data: instructionsData = [], isLoading } = useQuery({
     queryKey: ["instructions"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/instructions`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/instructions`);
       return response.data.data || [];
     },
   });
@@ -56,7 +56,7 @@ export const InstructionsPage = () => {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/categories`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
       return response.data.data || [];
     },
   });
@@ -65,20 +65,25 @@ export const InstructionsPage = () => {
   const { data: subCategories = [] } = useQuery({
     queryKey: ["subcategories"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/api/subcategories`);
-      return response.data.data || [];
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/subcategories`);
+   
+      return response.data || [];
     },
   });
 
   // Filter subcategories based on selected category
   const filteredSubCategories = subCategories.filter(
+   
     (sub: SubCategory) => sub.categoryId === selectedCategory
+
   );
+    console.log(filteredSubCategories)
+
 
   // Create instruction mutation
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await axios.post(`${API_URL}/api/instructions`, data);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/instructions`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -99,7 +104,7 @@ export const InstructionsPage = () => {
   // Update instruction mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await axios.put(`${API_URL}/api/instructions/${id}`, data);
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/instructions/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
@@ -120,7 +125,7 @@ export const InstructionsPage = () => {
   // Delete instruction mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await axios.delete(`${API_URL}/api/instructions/${id}`);
+      const response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/instructions/${id}`);
       return response.data;
     },
     onSuccess: () => {
@@ -239,7 +244,7 @@ export const InstructionsPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {filteredSubCategories.map((subCategory: SubCategory) => (
-                      <SelectItem key={subCategory._id} value={subCategory._id}>
+                      <SelectItem key={subCategory.id} value={subCategory.id}>
                         {subCategory.name}
                       </SelectItem>
                     ))}

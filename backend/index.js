@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -8,6 +9,7 @@ const vehicleCategories = require('./routes/vehicleCategory')
 const priceCategoryRoutes = require('./routes/priceCategoryRoutes');
 const rideCostRoutes = require('./routes/rideCostRoutes');
 const peakRoutes = require('./routes/peakRoutes');
+const instructionRoutes = require('./routes/instructionRoutes');
 const connectToDb = require('./database/db');
 
 const app = express();
@@ -35,6 +37,7 @@ app.use('/api/vehiclecategories',vehicleCategories)
 app.use('/api/price-categories', priceCategoryRoutes);
 app.use('/api/ride-costs', rideCostRoutes);
 app.use('/api/peaks', peakRoutes);
+app.use('/api/instructions', instructionRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -244,7 +244,7 @@ export const InstructionsPage = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {filteredSubCategories.map((subCategory: SubCategory) => (
-                      <SelectItem key={subCategory.id} value={subCategory.id}>
+                      <SelectItem key={subCategory._id} value={subCategory._id}>
                         {subCategory.name}
                       </SelectItem>
                     ))}

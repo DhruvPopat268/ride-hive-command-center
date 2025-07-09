@@ -18,7 +18,6 @@ import {
   Clock,
   BookOpen,
   UserCheck,
-  Taxi,
   Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,14 +38,8 @@ const menuItems = [
   { icon: Clock, label: "Peak Hours / Peak Dates", key: "peakhours" },
   { icon: BookOpen, label: "Instructions", key: "instructions" },
   { icon: UserCheck, label: "Driver Calculation Model", key: "drivercalculation" },
-  { icon: Taxi, label: "Cab Calculation Model", key: "cabcalculation" },
+  { icon: Car, label: "Cab Calculation Model", key: "cabcalculation" },
   { icon: Package, label: "Parcel Calculation Model", key: "parcelcalculation" },
-  // { icon: Wallet, label: "Payments", key: "payments" },
-  // { icon: BarChart3, label: "Analytics", key: "analytics" },
-  // { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },
-  // { icon: Bell, label: "Notifications", key: "notifications" },
-  // { icon: Shield, label: "Safety", key: "safety" },
-  // { icon: Settings, label: "Settings", key: "settings" },
 ];
 
 export const Sidebar = ({ isOpen, activeSection, onSectionChange }: SidebarProps) => {
@@ -85,14 +78,7 @@ export const Sidebar = ({ isOpen, activeSection, onSectionChange }: SidebarProps
           >
             <item.icon className="w-5 h-5 flex-shrink-0" />
             {isOpen && (
-              <>
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.count && (
-                  <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                    {item.count}
-                  </span>
-                )}
-              </>
+              <span className="flex-1 text-left">{item.label}</span>
             )}
           </button>
         ))}

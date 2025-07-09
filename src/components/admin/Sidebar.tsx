@@ -1,3 +1,4 @@
+
 import { 
   LayoutDashboard, 
   Car, 
@@ -15,7 +16,10 @@ import {
   DollarSign,
   Calculator,
   Clock,
-  BookOpen
+  BookOpen,
+  UserCheck,
+  Taxi,
+  Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +38,9 @@ const menuItems = [
   { icon: Calculator, label: "Ride Cost", key: "ridecost" },
   { icon: Clock, label: "Peak Hours / Peak Dates", key: "peakhours" },
   { icon: BookOpen, label: "Instructions", key: "instructions" },
+  { icon: UserCheck, label: "Driver Calculation Model", key: "drivercalculation" },
+  { icon: Taxi, label: "Cab Calculation Model", key: "cabcalculation" },
+  { icon: Package, label: "Parcel Calculation Model", key: "parcelcalculation" },
   // { icon: Wallet, label: "Payments", key: "payments" },
   // { icon: BarChart3, label: "Analytics", key: "analytics" },
   // { icon: HeadphonesIcon, label: "Support", key: "support", count: 7 },

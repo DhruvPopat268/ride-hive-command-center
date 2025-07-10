@@ -9,7 +9,7 @@ const Category = require('../models/Category');
 router.get('/', async (req, res) => {
   try {
     const categories = await Category.find().sort({ createdAt: -1 });
-    res.json({
+    res.status(200).json({
       success: true,
       count: categories.length,
       data: categories

@@ -9,7 +9,7 @@ const { ObjectId } = mongoose.Types;
 router.get('/', async (req, res) => {
   try {
     const subcategories = await SubCategory.find().populate('categoryId', 'name');
-    res.json(subcategories.map(sub => ({
+    res.status(200).json(subcategories.map(sub => ({
       id: sub._id,
       name: sub.name,
       categoryId: sub.categoryId._id,

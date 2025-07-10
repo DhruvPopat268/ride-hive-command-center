@@ -17,6 +17,7 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: [
+    "http://localhost:8082",
     "http://localhost:8081",
     "http://localhost:8080",
    "https://driver-go-admin-frontend.onrender.com",

@@ -36,7 +36,7 @@ const menuItems = [
   { icon: DollarSign, label: "Price Category", key: "pricecategory" },
   { icon: Calculator, label: "Ride Cost", key: "ridecost" },
   { icon: Clock, label: "Peak Hours / Peak Dates", key: "peakhours" },
-  { icon: BookOpen, label: "Instructions", key: "instructions" },
+  { icon: BookOpen, label: "T & C", key: "instructions" },
   { icon: UserCheck, label: "Driver Calculation Model", key: "drivercalculation" },
   { icon: Car, label: "Cab Calculation Model", key: "cabcalculation" },
   { icon: Package, label: "Parcel Calculation Model", key: "parcelcalculation" },

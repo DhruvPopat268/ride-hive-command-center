@@ -198,12 +198,12 @@ export const InstructionsPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-white dark:text-white text-gray-900">Instructions Management</h1>
+        <h1 className="text-2xl font-bold text-white dark:text-white text-gray-900">T & C Management</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={openAddDialog} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="w-4 h-4 mr-2" />
-              Add Instructions
+              Add T & C
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -278,7 +278,7 @@ export const InstructionsPage = () => {
       {/* Instructions Table */}
       <div className="bg-gray-800 dark:bg-gray-800 bg-white rounded-lg border border-gray-700 dark:border-gray-700 border-gray-200">
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-white dark:text-white text-gray-900 mb-4">Instructions List</h2>
+          <h2 className="text-lg font-semibold text-white dark:text-white text-gray-900 mb-4">T & C List</h2>
           {isLoading ? (
             <div className="text-center py-4">Loading...</div>
           ) : (
@@ -295,7 +295,7 @@ export const InstructionsPage = () => {
                 {instructionsData.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-gray-400 dark:text-gray-400 text-gray-500">
-                      No instructions found
+                      No T & C found
                     </TableCell>
                   </TableRow>
                 ) : (
